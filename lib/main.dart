@@ -1,22 +1,15 @@
+import 'package:ash_captura_pikachu/Games/ash_captura_pikachu.dart';
 import 'package:flutter/material.dart';
+import 'package:flame/game.dart';
 
 void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+  runApp(
+    MaterialApp(
+      home: Scaffold(
+        body: GameWidget(
+            game:
+                AshCapturaPikachu()), // Usamos el GameWidget con nuestro juego
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
+    ),
+  );
 }
