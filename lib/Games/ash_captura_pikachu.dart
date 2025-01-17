@@ -7,31 +7,35 @@ import '../Characters/ash_player.dart';
 
 class AshCapturaPikachu extends FlameGame
     with HasKeyboardHandlerComponents, HasCollisionDetection {
-
   late AshPlayer _ashPlayer;
 
   @override
   Future<void> onLoad() async {
+    await super.onLoad();
+
     await images.loadAll([
       'AshAndando.png',
     ]);
 
     camera.viewfinder.anchor = Anchor.center;
 
-    // Cargar el mapa sin parámetros adicionales como atlasSize
-    TiledComponent mapa1 = await TiledComponent.load(
-      "mapa1.tmx",
-      Vector2(128, 128), // Tamaño base para el mapa,
-    );
+    try {
+      // Mantenemos el tamaño original de los tiles (32x32)
+      TiledComponent mapa=await TiledComponent.load("mapa.tmx", Vector2(48, 48));
 
-    mapa1.scale = Vector2(0.50 , 0.25);
+      // Usamos una escala de 2.0 para hacer el mapa más visible
+      mapa.scale = Vector2.all(0.5);
 
-    add(mapa1);
+      world.add(mapa);
 
-    _ashPlayer = AshPlayer(
-      position: Vector2(300, 300),
-    );
+      // Ajustamos la posición inicial del jugador según el nuevo tamaño
+      _ashPlayer = AshPlayer(
+        position: Vector2(50, 350),
+      );
+      world.add(_ashPlayer);
 
-    world.add(_ashPlayer);
+    } catch (e) {
+      print('Error cargando el mapa: $e');
+    }
   }
 }
