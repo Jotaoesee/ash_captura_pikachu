@@ -5,7 +5,7 @@ import 'package:flame/game.dart';
 import 'package:flame/parallax.dart';
 import 'package:flame_tiled/flame_tiled.dart';
 
-import '../Characters/ash_player.dart';
+import '../personajes/ash_player.dart';
 
 class AshCapturaPikachu extends FlameGame
     with HasKeyboardHandlerComponents, HasCollisionDetection {
