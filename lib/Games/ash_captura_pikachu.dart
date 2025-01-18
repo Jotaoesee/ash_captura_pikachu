@@ -1,3 +1,4 @@
+import 'package:ash_captura_pikachu/personajes/pikachu.dart';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
@@ -11,6 +12,7 @@ class AshCapturaPikachu extends FlameGame
 
   // Instancia del jugador (Ash)
   late AshPlayer _ashPlayer;
+  late Pikachu _pikachu;
 
   @override
   Future<void> onLoad() async {
@@ -20,6 +22,7 @@ class AshCapturaPikachu extends FlameGame
     await images.loadAll([
       'AshAndando.png',// Cargar la imagen de la animación de caminar
       'Summer6.png',// Cargar el fondo
+      'PIKACHU.png',
     ]);
 
     camera.viewfinder.anchor = Anchor.topLeft;
@@ -45,6 +48,13 @@ class AshCapturaPikachu extends FlameGame
 
       // Añadir el mapa al juego
       add(mapa);
+
+      final objectGroupPikachu = mapa.tileMap.getLayer<ObjectGroup>('pikachu');
+
+      for (final posPikachuEnMapa in objectGroupPikachu!.objects) {
+
+        add(Pikachu(position: Vector2(posPikachuEnMapa.x * 1.34, posPikachuEnMapa.y * 1)));
+      }
 
       // Crear la instancia del jugador (Ash) y establecer su posición inicial
       _ashPlayer = AshPlayer(
