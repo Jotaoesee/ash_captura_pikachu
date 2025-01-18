@@ -1,6 +1,7 @@
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
 import 'package:flame/game.dart';
+import 'package:flame/parallax.dart';
 import 'package:flame_tiled/flame_tiled.dart';
 
 import '../Characters/ash_player.dart';
@@ -17,9 +18,21 @@ class AshCapturaPikachu extends FlameGame
 
     // Cargar todas las imágenes necesarias para el juego
     await images.loadAll([
-      'AshAndando.png', // Cargar la imagen de la animación de caminar
+      'AshAndando.png',// Cargar la imagen de la animación de caminar
+      'Summer6.png',// Cargar el fondo
     ]);
 
+    camera.viewfinder.anchor = Anchor.topLeft;
+
+    final fondo = await loadParallaxComponent(
+      [
+        ParallaxImageData('Summer6.png'), // Cargar la imagen
+      ],
+      baseVelocity: Vector2.zero(), // Fondo estático (sin movimiento)
+      size: size, // Tamaño del fondo
+    );
+
+    add(fondo); // Agregar el fond
     try {
       // Cargar el mapa desde el archivo .tmx (mapa del juego)
       final TiledComponent mapa = await TiledComponent.load(
@@ -28,7 +41,7 @@ class AshCapturaPikachu extends FlameGame
       );
 
       // Ajustar la escala del mapa (reduce el tamaño global del mapa)
-      mapa.scale = Vector2.all(1);  // Ajuste de escala global del mapa
+      mapa.scale = Vector2(1.34, 1);  // Ajuste de escala global del mapa
 
       // Añadir el mapa al juego
       add(mapa);
