@@ -45,24 +45,39 @@ class AshPlayer extends SpriteAnimationComponent
 
   @override
   bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> teclasPresionadas) {
-    // Detectar movimiento en base a las teclas
+    // Reiniciar la dirección a cero en cada ciclo de evento
+    direccion = Vector2.zero();
+
     if (event is KeyDownEvent) {
+      // Mover hacia arriba
       if (teclasPresionadas.contains(LogicalKeyboardKey.keyW)) {
-        direccion = Vector2(0, -1);  // Mover hacia arriba
-      } else if (teclasPresionadas.contains(LogicalKeyboardKey.keyA)) {
-        direccion = Vector2(-1, 0);  // Mover hacia la izquierda
-      } else if (teclasPresionadas.contains(LogicalKeyboardKey.keyS)) {
-        direccion = Vector2(0, 1);   // Mover hacia abajo
-      } else if (teclasPresionadas.contains(LogicalKeyboardKey.keyD)) {
-        direccion = Vector2(1, 0);   // Mover hacia la derecha
-      } else if (teclasPresionadas.contains(LogicalKeyboardKey.space)) {
+        direccion.y = -1;
+      }
+
+      // Mover hacia abajo
+      if (teclasPresionadas.contains(LogicalKeyboardKey.keyS)) {
+        direccion.y = 1;
+      }
+
+      // Mover hacia la izquierda
+      if (teclasPresionadas.contains(LogicalKeyboardKey.keyA)) {
+        direccion.x = -1;
+      }
+
+      // Mover hacia la derecha
+      if (teclasPresionadas.contains(LogicalKeyboardKey.keyD)) {
+        direccion.x = 1;
+      }
+
+      // Hacer salto (aún no implementado)
+      if (teclasPresionadas.contains(LogicalKeyboardKey.space)) {
         print('¡Saltando!');
       }
-    } else if (event is KeyUpEvent) {
-      // Detener el movimiento cuando la tecla se suelta
-      if (teclasPresionadas.isEmpty) {
-        direccion = Vector2.zero();
-      }
+    }
+
+    // Normalizar el vector de dirección si es necesario (para movimientos diagonales)
+    if (direccion.length > 1) {
+      direccion.normalize();
     }
 
     return super.onKeyEvent(event, teclasPresionadas);
