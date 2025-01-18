@@ -1,11 +1,9 @@
 import 'dart:ui';
-
 import 'package:flame/components.dart';
-import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flutter/services.dart';
 
-import '../Games/ash_captura_pikachu.dart'; // Para manejar las teclas presionadas
+import '../Games/ash_captura_pikachu.dart';
 
 class AshPlayer extends SpriteAnimationComponent
     with HasGameReference<AshCapturaPikachu>, KeyboardHandler {

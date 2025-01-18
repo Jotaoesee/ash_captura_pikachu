@@ -32,7 +32,7 @@ class AshCapturaPikachu extends FlameGame
 
       // Crear y añadir el jugador
       _ashPlayer = AshPlayer(
-        position: Vector2(100, 100),
+        position: Vector2(40, 655),
       );
       add(_ashPlayer);
     } catch (e) {
