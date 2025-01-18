@@ -17,23 +17,24 @@ class AshCapturaPikachu extends FlameGame
       'AshAndando.png',
     ]);
 
-    camera.viewfinder.anchor = Anchor.center;
-
     try {
-      // Mantenemos el tamaño original de los tiles (32x32)
-      TiledComponent mapa=await TiledComponent.load("mapa.tmx", Vector2(48, 48));
-
-      // Usamos una escala de 2.0 para hacer el mapa más visible
-      mapa.scale = Vector2.all(0.5);
-
-      world.add(mapa);
-
-      // Ajustamos la posición inicial del jugador según el nuevo tamaño
-      _ashPlayer = AshPlayer(
-        position: Vector2(50, 350),
+      // Cargar el mapa desde el archivo .tmx
+      final TiledComponent mapa = await TiledComponent.load(
+        "mapa.tmx",
+        Vector2(48, 48), // Tamaño de los tiles del mapa
       );
-      world.add(_ashPlayer);
 
+      // Ajustar la escala del mapa (reduce el tamaño global)
+      mapa.scale = Vector2.all(1);
+
+      // Añadir el mapa al juego
+      add(mapa);
+
+      // Crear y añadir el jugador
+      _ashPlayer = AshPlayer(
+        position: Vector2(100, 100),
+      );
+      add(_ashPlayer);
     } catch (e) {
       print('Error cargando el mapa: $e');
     }
