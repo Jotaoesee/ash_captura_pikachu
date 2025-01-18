@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.1" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="48" tileheight="48" infinite="0" nextlayerid="3" nextobjectid="8">
+<map version="1.10" tiledversion="1.11.1" orientation="orthogonal" renderorder="right-down" width="30" height="20" tilewidth="48" tileheight="48" infinite="0" nextlayerid="3" nextobjectid="16">
  <tileset firstgid="1" source="tilesets/paleta.tsx"/>
  <layer id="1" name="Capa de patrones 1" width="30" height="20">
   <data encoding="csv">
@@ -26,16 +26,19 @@
 </data>
  </layer>
  <objectgroup id="2" name="pikachu">
-  <object id="4" x="1470.47" y="361.388">
+  <object id="11" x="21.5247" y="783.951">
    <point/>
   </object>
-  <object id="5" x="16.9932" y="779.419">
+  <object id="12" x="897.239" y="401.038">
    <point/>
   </object>
-  <object id="6" x="643.474" y="489.403">
+  <object id="13" x="661.6" y="498.466">
    <point/>
   </object>
-  <object id="7" x="884.777" y="372.717">
+  <object id="14" x="894.973" y="831.532">
+   <point/>
+  </object>
+  <object id="15" x="1324.33" y="641.208">
    <point/>
   </object>
  </objectgroup>
