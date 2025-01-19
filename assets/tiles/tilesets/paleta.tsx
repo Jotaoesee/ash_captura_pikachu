@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.10" tiledversion="1.11.1" name="paleta" tilewidth="48" tileheight="48" tilecount="128" columns="0">
+<tileset version="1.10" tiledversion="1.11.1" name="paleta" tilewidth="48" tileheight="48" tilecount="140" columns="0">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="0">
   <image source="../../images/images_tiles/Layer-0.png" width="48" height="48"/>
@@ -384,5 +384,41 @@
  </tile>
  <tile id="127">
   <image source="../../images/images_tiles/tile128.png" width="48" height="48"/>
+ </tile>
+ <tile id="146">
+  <image source="../../images/images_tiles/rocks1_2.png" width="32" height="32"/>
+ </tile>
+ <tile id="147">
+  <image source="../../images/images_tiles/Barrel_2.png" width="48" height="39"/>
+ </tile>
+ <tile id="149">
+  <image source="../../images/images_tiles/Tree3.png" width="44" height="48"/>
+ </tile>
+ <tile id="151">
+  <image source="../../images/images_tiles/2.png" width="48" height="48"/>
+ </tile>
+ <tile id="152">
+  <image source="../../images/images_tiles/æhest_open.png" width="48" height="43"/>
+ </tile>
+ <tile id="153">
+  <image source="../../images/images_tiles/6.png" width="48" height="48"/>
+ </tile>
+ <tile id="154">
+  <image source="../../images/images_tiles/1.png" width="48" height="48"/>
+ </tile>
+ <tile id="155">
+  <image source="../../images/images_tiles/2aa.png" width="48" height="48"/>
+ </tile>
+ <tile id="156">
+  <image source="../../images/images_tiles/3.png" width="48" height="48"/>
+ </tile>
+ <tile id="157">
+  <image source="../../images/images_tiles/4.png" width="48" height="48"/>
+ </tile>
+ <tile id="158">
+  <image source="../../images/images_tiles/5.png" width="48" height="48"/>
+ </tile>
+ <tile id="159">
+  <image source="../../images/images_tiles/door.png" width="33" height="48"/>
  </tile>
 </tileset>

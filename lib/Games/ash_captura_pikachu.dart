@@ -16,13 +16,13 @@ class AshCapturaPikachu extends FlameGame
 
   @override
   Future<void> onLoad() async {
-    await super.onLoad();  // Cargar el supercomponente de FlameGame
+    await super.onLoad();
 
     // Cargar todas las imágenes necesarias para el juego
     await images.loadAll([
-      'AshAndando.png',// Cargar la imagen de la animación de caminar
+      'AshAndando.png',// Personaje principal ash
       'Summer6.png',// Cargar el fondo
-      'PIKACHU.png',
+      'PIKACHU.png', // Pikachu que sera lo que tiene que capturar ash
     ]);
 
     camera.viewfinder.anchor = Anchor.topLeft;
