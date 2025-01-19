@@ -5,142 +5,161 @@ import 'package:flutter/services.dart';
 
 import '../Games/ash_captura_pikachu.dart';
 
+// Clase que representa al jugador "Ash" en el juego
 class AshPlayer extends SpriteAnimationComponent
     with HasGameReference<AshCapturaPikachu>, KeyboardHandler {
-
-  // Velocidad de movimiento horizontal del jugador
+  // Velocidad de movimiento horizontal
   double velocidad = 150;
 
-  // Dirección del movimiento (horizontal y vertical)
+  // Dirección del movimiento en el eje X (-1: izquierda, 1: derecha, 0: sin movimiento)
   Vector2 direccion = Vector2.zero();
 
-  // Parámetros del salto ajustados
-  double velocidadSalto = -300; // Velocidad inicial del salto (negativa para que vaya hacia arriba)
-  double gravedad = 500; // Gravedad que afecta al jugador (en aumento cada frame)
-  double posicionSueloInicial = 0; // Posición de referencia para el suelo
-  bool enElAire = false; // Estado del jugador (si está en el aire o no)
-  double velocidadVertical = 0; // Velocidad vertical del jugador (usada para el salto y la caída)
+  // Velocidad inicial del salto
+  double velocidadSalto = -300;
 
-  // Animaciones del jugador (caminando y saltando)
+  // Gravedad que afecta al jugador, incrementa la velocidad de caída
+  double gravedad = 500;
+
+  // Posición inicial del suelo donde el jugador debe estar parado
+  double posicionSueloInicial = 0;
+
+  // Estado del salto (true si está en el aire, false si está en el suelo)
+  bool enElAire = false;
+
+  // Velocidad vertical actual del jugador (positiva para caer, negativa para subir)
+  double velocidadVertical = 0;
+
+  // Animación para el movimiento caminando
   late SpriteAnimation animacionCaminando;
-  late SpriteAnimation animacionSaltando;
-  bool mirandoIzquierda = false; // Para saber si el jugador está mirando hacia la izquierda
 
-  AshPlayer({
-    required Vector2 position,
-  }) : super(size: Vector2.all(64), anchor: Anchor.center) {
+  // Animación para el estado de salto
+  late SpriteAnimation animacionSaltando;
+
+  // Animación para el estado quieto (sin movimiento)
+  late SpriteAnimation animacionQuieto;
+
+  // Indica si el personaje está mirando hacia la izquierda
+  bool mirandoIzquierda = false;
+
+  // Constructor que inicializa la posición del jugador
+  AshPlayer({required Vector2 position})
+      : super(size: Vector2.all(64), anchor: Anchor.center) {
     this.position = position;
-    posicionSueloInicial = position.y; // Establecer la posición inicial del suelo
+    posicionSueloInicial = position.y;
   }
 
+  // Método que se ejecuta al cargar el jugador, inicializa las animaciones
   @override
   Future<void> onLoad() async {
-    // Cargar la imagen de la animación de caminar
+    // Cargar la imagen del sprite del jugador
     await game.images.load('AshAndando.png');
 
-    // Crear la animación caminando a partir de los fotogramas
+    // Crear la animación para caminar
     animacionCaminando = SpriteAnimation.fromFrameData(
       game.images.fromCache('AshAndando.png'),
       SpriteAnimationData.sequenced(
-        amount: 4,
-        textureSize: Vector2.all(64),
-        stepTime: 0.12,
+        amount: 4, // Número de fotogramas
+        textureSize: Vector2.all(64), // Tamaño de cada fotograma
+        stepTime: 0.12, // Tiempo entre fotogramas
       ),
     );
 
-    // Usar la misma animación para el salto por ahora (puedes modificar esto)
+    // Crear la animación para saltar (por ahora reutiliza la de caminar)
     animacionSaltando = animacionCaminando;
+
+    // Crear la animación para estar quieto (primer fotograma de la animación)
+    animacionQuieto = SpriteAnimation.fromFrameData(
+      game.images.fromCache('AshAndando.png'),
+      SpriteAnimationData.sequenced(
+        amount: 1, // Solo un fotograma
+        textureSize: Vector2.all(64),
+        stepTime: 0.1,
+      ),
+    );
+
+    // Establecer la animación inicial como la de caminar
     animation = animacionCaminando;
     playing = true;
   }
 
-  // Función para iniciar el salto
+  // Método que inicia el salto del jugador
   void iniciarSalto() {
-    if (!enElAire) { // Solo saltar si no estamos ya en el aire
+    // Solo puede saltar si no está ya en el aire
+    if (!enElAire) {
       enElAire = true;
-      velocidadVertical = velocidadSalto; // Establecer la velocidad inicial del salto
-      print('Iniciando salto desde altura: ${position.y}');
+      velocidadVertical = velocidadSalto; // Aplicar la velocidad inicial del salto
     }
   }
 
+  // Método que se ejecuta en cada frame para actualizar el estado del jugador
   @override
   void update(double dt) {
     super.update(dt);
 
-    // Limitar dt para evitar grandes saltos en bajas tasas de actualización
+    // Limitar el tiempo delta para evitar grandes saltos en la simulación
     dt = dt.clamp(0, 0.016);
 
-    // Actualizar la posición horizontal del jugador según la dirección
+    // Actualizar la posición horizontal según la dirección y velocidad
     position.x += direccion.x * velocidad * dt;
 
-    // Lógica del salto y la caída del jugador
+    // Lógica del salto y la gravedad
     if (enElAire) {
-      // Aplicar la gravedad a la velocidad vertical
-      velocidadVertical += gravedad * dt;
+      velocidadVertical += gravedad * dt; // Incrementar la velocidad vertical por gravedad
+      position.y += velocidadVertical * dt; // Actualizar la posición vertical
 
-      // Actualizar la posición Y del jugador según la velocidad vertical
-      position.y += velocidadVertical * dt;
-
-      // Comprobar si el jugador ha aterrizado
+      // Verificar si el jugador ha aterrizado
       if (position.y >= posicionSueloInicial) {
-        position.y = posicionSueloInicial; // Establecer la posición Y al suelo
-        enElAire = false; // El jugador ya no está en el aire
-        velocidadVertical = 0; // Detener la velocidad vertical
-        print('Aterrizaje en: ${position.y}');
+        position.y = posicionSueloInicial; // Corregir la posición al nivel del suelo
+        enElAire = false; // Marcar que ya no está en el aire
+        velocidadVertical = 0; // Restablecer la velocidad vertical
       }
     }
 
-    // Controlar las animaciones según el estado del jugador
+    // Cambiar la animación según el estado del jugador
     if (enElAire) {
-      animation = animacionSaltando; // Usar la animación de salto cuando está en el aire
+      animation = animacionSaltando; // Usar animación de salto si está en el aire
+    } else if (direccion.x != 0) {
+      animation = animacionCaminando; // Usar animación de caminar si está en movimiento
+      playing = true;
     } else {
-      if (direccion.x != 0) {
-        animation = animacionCaminando; // Animación de caminar si se mueve horizontalmente
-        playing = true;
-      } else {
-        animation = animacionCaminando; // Animación de caminar cuando está parado
-        playing = false;
-        animationTicker?.reset(); // Detener la animación si está parado
-      }
+      animation = animacionQuieto; // Usar animación de quieto si no se mueve
+      playing = false;
+      animationTicker?.reset(); // Reiniciar la animación
     }
 
-    // Actualizar la dirección del sprite (voltear si el jugador cambia de dirección)
+    // Voltear el sprite si cambia la dirección del movimiento
     if (direccion.x < 0 && !mirandoIzquierda) {
-      flipHorizontally(); // Voltear el sprite horizontalmente cuando va hacia la izquierda
+      flipHorizontally();
       mirandoIzquierda = true;
     } else if (direccion.x > 0 && mirandoIzquierda) {
-      flipHorizontally(); // Voltear el sprite hacia la derecha
+      flipHorizontally();
       mirandoIzquierda = false;
     }
   }
 
+  // Método para manejar eventos de teclado
   @override
   bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> teclasPresionadas) {
+    // Detectar teclas presionadas
     if (event is KeyDownEvent || event is KeyRepeatEvent) {
-      // Mover hacia la izquierda (tecla A)
       if (teclasPresionadas.contains(LogicalKeyboardKey.keyA)) {
-        direccion.x = -1;
+        direccion.x = -1; // Mover hacia la izquierda
       }
-
-      // Mover hacia la derecha (tecla D)
       if (teclasPresionadas.contains(LogicalKeyboardKey.keyD)) {
-        direccion.x = 1;
+        direccion.x = 1; // Mover hacia la derecha
       }
-
-      // Iniciar salto (tecla Espacio)
       if (teclasPresionadas.contains(LogicalKeyboardKey.space)) {
-        iniciarSalto();
+        iniciarSalto(); // Iniciar el salto
       }
     } else if (event is KeyUpEvent) {
-      // Detener el movimiento cuando se suelta la tecla correspondiente
+      // Detectar teclas soltadas
       if (event.logicalKey == LogicalKeyboardKey.keyA && direccion.x < 0) {
-        direccion.x = 0;
+        direccion.x = 0; // Detener movimiento hacia la izquierda
       }
       if (event.logicalKey == LogicalKeyboardKey.keyD && direccion.x > 0) {
-        direccion.x = 0;
+        direccion.x = 0; // Detener movimiento hacia la derecha
       }
     }
-
     return super.onKeyEvent(event, teclasPresionadas);
   }
 }
