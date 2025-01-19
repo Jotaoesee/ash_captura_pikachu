@@ -3,109 +3,91 @@ import 'package:flutter/material.dart';
 import 'package:ash_captura_pikachu/Games/ash_captura_pikachu.dart';
 
 void main() {
+  // Crear una instancia del juego para utilizarla en la configuración inicial.
+  final gameInstance = AshCapturaPikachu();
+
+  // Ejecutar la aplicación Flutter con MaterialApp.
   runApp(
     MaterialApp(
-      home: GameWidget<AshCapturaPikachu>(
-        game: AshCapturaPikachu(),
-        overlayBuilderMap: {
-          'MenuInicio': (context, AshCapturaPikachu game) {
-            return Center(
-              child: Container(
-                padding: EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.8),
-                  borderRadius: BorderRadius.circular(15),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 10,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      '¡Bienvenido!',
-                      style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blueAccent,
+      debugShowCheckedModeBanner: false, // Ocultar la etiqueta de "debug" en la esquina superior derecha.
+      home: Focus(
+        autofocus: true, // Habilitar el enfoque automático para recibir eventos de teclado.
+        child: GameWidget<AshCapturaPikachu>.controlled(
+          gameFactory: () => gameInstance, // Proporcionar la instancia del juego al widget.
+
+          // Configuración de los overlays, mapas de widgets superpuestos al juego.
+          overlayBuilderMap: {
+            'MenuInicio': (context, AshCapturaPikachu game) {
+              // Overlay de inicio que muestra un menú inicial con un botón para empezar el juego.
+              return Center(
+                child: Container(
+                  padding: const EdgeInsets.all(20), // Espaciado interno del contenedor.
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.8), // Fondo semitransparente.
+                    borderRadius: BorderRadius.circular(15), // Bordes redondeados.
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3), // Sombra del contenedor.
+                        blurRadius: 10,
+                        offset: const Offset(0, 4), // Desplazamiento de la sombra.
                       ),
-                    ),
-                    SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: () {
-                        game.iniciarJuego();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                    ],
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min, // Ajustar el tamaño de la columna al contenido.
+                    children: [
+                      const Text(
+                        '¡Bienvenido!',
+                        style: TextStyle(
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.blueAccent, // Estilo de texto llamativo.
                         ),
                       ),
-                      child: Text(
-                        'Iniciar Juego',
-                        style: TextStyle(fontSize: 20),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-          'GameOverMenu': (context, AshCapturaPikachu game) {
-            return Center(
-              child: Container(
-                padding: EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.8),
-                  borderRadius: BorderRadius.circular(15),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 10,
-                      offset: Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      'Game Over',
-                      style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.redAccent,
-                      ),
-                    ),
-                    SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: () {
-                        game.reiniciarJuego();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.redAccent,
-                        padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                      const SizedBox(height: 20), // Espaciado entre el texto y el botón.
+                      ElevatedButton(
+                        onPressed: () {
+                          // Acción del botón: iniciar el juego si ya está cargado.
+                          if (game.isLoaded) {
+                            game.iniciarJuego(); // Llamar al método para comenzar el juego.
+                            game.overlays.remove('MenuInicio'); // Ocultar el menú de inicio.
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blueAccent, // Color del botón.
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 30,
+                            vertical: 15,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10), // Bordes redondeados del botón.
+                          ),
+                        ),
+                        child: const Text(
+                          'Iniciar Juego',
+                          style: TextStyle(fontSize: 20), // Estilo del texto en el botón.
                         ),
                       ),
-                      child: Text(
-                        'Reiniciar',
-                        style: TextStyle(fontSize: 20),
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            );
+              );
+            },
           },
-        },
-        initialActiveOverlays: const ['MenuInicio'], // Menú inicial activo
+
+          // Builder que muestra un indicador de carga mientras se prepara el juego.
+          loadingBuilder: (context) => const Center(
+            child: CircularProgressIndicator(), // Animación circular de carga.
+          ),
+
+          // Builder que muestra un mensaje en caso de error durante la carga del juego.
+          errorBuilder: (context, ex) => Center(
+            child: Text('Error: ${ex.toString()}'), // Muestra el mensaje de error en pantalla.
+          ),
+
+          // Lista de overlays que estarán activos al inicio de la aplicación.
+          initialActiveOverlays: const ['MenuInicio'],
+        ),
       ),
     ),
   );

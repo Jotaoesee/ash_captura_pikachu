@@ -8,7 +8,7 @@ import 'package:flame_tiled/flame_tiled.dart';
 import '../personajes/ash_player.dart';
 
 class AshCapturaPikachu extends FlameGame
-    with HasKeyboardHandlerComponents, HasCollisionDetection {
+    with HasCollisionDetection, HasKeyboardHandlerComponents {
   // Instancia del jugador (Ash)
   late AshPlayer _ashPlayer;
 
@@ -72,7 +72,8 @@ class AshCapturaPikachu extends FlameGame
 
       // Crear la instancia del jugador (Ash) y establecer su posición inicial
       _ashPlayer = AshPlayer(
-        position: Vector2(40, 655), // Posición inicial de Ash en el mapa
+        position: Vector2(40, 655),
+        movimientoHabilitado: false, // No se habilita el movimiento al principio
       );
 
       // Agregar el jugador al juego
@@ -86,21 +87,23 @@ class AshCapturaPikachu extends FlameGame
   // Función para iniciar el juego
   void iniciarJuego() {
     juegoEnCurso = true;
-    overlays.remove('MenuInicio'); // Oculta el menú inicial
+    _ashPlayer.habilitarMovimiento(true); // Habilitar movimiento de Ash
+    overlays.remove('MenuInicio'); // Eliminar el overlay de inicio
   }
 
   // Función para mostrar el "Game Over"
   void mostrarGameOver() {
     juegoEnCurso = false;
-    overlays.add('GameOverMenu'); // Muestra el menú de "Game Over"
+    _ashPlayer.habilitarMovimiento(false); // Deshabilitar movimiento de Ash
+    overlays.add('GameOverMenu'); // Mostrar el overlay de "Game Over"
   }
 
   // Función para reiniciar el juego
   void reiniciarJuego() {
     juegoEnCurso = true;
-    overlays.remove('GameOverMenu'); // Oculta el menú de "Game Over"
-    removeAll(children); // Elimina todos los componentes actuales
-    inicializarComponentes(); // Reinicia el juego
+    overlays.remove('GameOverMenu'); // Ocultar el overlay de "Game Over"
+    removeAll(children); // Eliminar todos los componentes actuales
+    inicializarComponentes(); // Reiniciar el juego
   }
 
   @override
