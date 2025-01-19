@@ -4,119 +4,135 @@ import 'package:flame/events.dart';
 import 'package:flame/game.dart';
 import 'package:flame/parallax.dart';
 import 'package:flame_tiled/flame_tiled.dart';
+import 'package:flame_audio/flame_audio.dart';
 
 import '../personajes/ash_player.dart';
 
+// Clase principal del juego que hereda de FlameGame
 class AshCapturaPikachu extends FlameGame
     with HasCollisionDetection, HasKeyboardHandlerComponents {
-  // Instancia del jugador (Ash)
-  late AshPlayer _ashPlayer;
 
-  // Estado del juego
-  bool juegoEnCurso = false;
+  late AshPlayer _ashPlayer; // Jugador Ash
+  bool juegoEnCurso = false; // Estado del juego (si está en curso o no)
 
   @override
   Future<void> onLoad() async {
-    await super.onLoad(); // Llamada al método de inicialización de FlameGame
+    await super.onLoad(); // Carga los componentes base de Flame
 
-    // Cargar todas las imágenes necesarias para el juego
+    // Cargar imágenes necesarias para el juego
     await images.loadAll([
-      'AshAndando.png', // Imagen para la animación de Ash
-      'Summer6.png',    // Fondo del juego
-      'PIKACHU.png',    // Imagen de Pikachu (objetivo a capturar)
+      'AshAndando.png',
+      'Summer6.png',
+      'PIKACHU.png',
     ]);
 
-    // Configurar la cámara para que use la esquina superior izquierda como ancla
+    // Cargar el archivo de audio de música de fondo
+    await FlameAudio.audioCache.load('musica_fondo.mp3');
+
+    // Reproducir música de fondo con un volumen del 50%
+    FlameAudio.bgm.play('musica_fondo.mp3', volume: 0.5);
+    print("Reproduciendo música...");
+
+    // Configurar la cámara para que su anclaje esté en la esquina superior izquierda
     camera.viewfinder.anchor = Anchor.topLeft;
 
-    // Cargar y agregar el fondo del juego
+    // Cargar y mostrar el fondo parallax
     final fondo = await loadParallaxComponent(
       [
-        ParallaxImageData('Summer6.png'), // Fondo del escenario
+        ParallaxImageData('Summer6.png'),
       ],
-      baseVelocity: Vector2.zero(), // Fondo estático sin movimiento
-      size: size, // Tamaño del fondo adaptado a la pantalla
+      baseVelocity: Vector2.zero(), // No se moverá el fondo
+      size: size,
     );
     add(fondo); // Agregar el fondo al juego
 
-    // Configurar el juego
+    // Inicializar otros componentes del juego (jugador, enemigos, etc.)
     inicializarComponentes();
   }
 
+  // Función que inicializa los componentes del juego
   void inicializarComponentes() async {
     try {
-      // Cargar el mapa del juego desde un archivo .tmx
+      // Cargar el mapa Tiled desde el archivo .tmx
       final TiledComponent mapa = await TiledComponent.load(
-        "mapa.tmx",        // Archivo del mapa
-        Vector2(48, 48),   // Tamaño de los tiles en el mapa
+        "mapa.tmx",
+        Vector2(48, 48), // Definir el tamaño de cada tile (48x48)
       );
 
-      // Ajustar la escala del mapa para que encaje en el escenario
-      mapa.scale = Vector2(1.34, 1); // Escala horizontal y vertical del mapa
+      // Escalar el mapa
+      mapa.scale = Vector2(1.34, 1);
+      add(mapa); // Agregar el mapa al juego
 
-      // Agregar el mapa al juego
-      add(mapa);
-
-      // Obtener el grupo de objetos "pikachu" del mapa
+      // Obtener los objetos del grupo 'pikachu' desde el mapa
       final objectGroupPikachu = mapa.tileMap.getLayer<ObjectGroup>('pikachu');
-
-      // Iterar sobre los objetos de la capa y agregar instancias de Pikachu al juego
+      // Agregar los personajes Pikachu en las posiciones definidas en el mapa
       for (final posPikachuEnMapa in objectGroupPikachu!.objects) {
         add(Pikachu(
           position: Vector2(
-            posPikachuEnMapa.x * 1.34, // Ajuste de posición horizontal
-            posPikachuEnMapa.y * 1,    // Ajuste de posición vertical
+            posPikachuEnMapa.x * 1.34,
+            posPikachuEnMapa.y * 1,
           ),
         ));
       }
 
-      // Crear la instancia del jugador (Ash) y establecer su posición inicial
+      // Inicializar al jugador (Ash), en la posición (40, 655) y con movimiento deshabilitado inicialmente
       _ashPlayer = AshPlayer(
         position: Vector2(40, 655),
-        movimientoHabilitado: false, // No se habilita el movimiento al principio
+        movimientoHabilitado: false,
       );
 
-      // Agregar el jugador al juego
-      add(_ashPlayer);
+      add(_ashPlayer); // Agregar al jugador al juego
     } catch (e) {
-      // Manejar errores al cargar el mapa y mostrar un mensaje en la consola
+      // Si hay un error cargando el mapa, mostrarlo en consola
       print('Error cargando el mapa: $e');
     }
   }
 
-  // Función para iniciar el juego
+  // Función que inicia el juego
   void iniciarJuego() {
-    juegoEnCurso = true;
-    _ashPlayer.habilitarMovimiento(true); // Habilitar movimiento de Ash
-    overlays.remove('MenuInicio'); // Eliminar el overlay de inicio
+    juegoEnCurso = true; // Marcar que el juego está en curso
+    _ashPlayer.habilitarMovimiento(true); // Habilitar el movimiento del jugador
+    overlays.remove('MenuInicio'); // Eliminar la superposición del menú de inicio
+
+    // Reproducir música de fondo (solo se ejecuta después de la interacción del usuario)
+    FlameAudio.bgm.play('musica_fondo.mp3', volume: 0.5);
+    print("Reproduciendo música...");
   }
 
-  // Función para mostrar el "Game Over"
+  // Función que muestra el estado de 'Game Over'
   void mostrarGameOver() {
-    juegoEnCurso = false;
-    _ashPlayer.habilitarMovimiento(false); // Deshabilitar movimiento de Ash
-    overlays.add('GameOverMenu'); // Mostrar el overlay de "Game Over"
+    juegoEnCurso = false; // Marcar que el juego ha terminado
+    _ashPlayer.habilitarMovimiento(false); // Deshabilitar el movimiento del jugador
+    overlays.add('GameOverMenu'); // Mostrar el menú de Game Over
   }
 
-  // Función para reiniciar el juego
+  // Función que reinicia el juego
   void reiniciarJuego() {
-    juegoEnCurso = true;
-    overlays.remove('GameOverMenu'); // Ocultar el overlay de "Game Over"
-    removeAll(children); // Eliminar todos los componentes actuales
-    inicializarComponentes(); // Reiniciar el juego
+    juegoEnCurso = true; // Volver a iniciar el juego
+    overlays.remove('GameOverMenu'); // Eliminar el menú de Game Over
+    removeAll(children); // Eliminar todos los componentes del juego
+    inicializarComponentes(); // Volver a inicializar los componentes
   }
 
   @override
   void update(double dt) {
-    super.update(dt);
+    super.update(dt); // Llamar al método de actualización de Flame
 
+    // Si el juego no está en curso, no hacemos nada
     if (!juegoEnCurso) {
-      return; // Pausa el juego si no está en curso
+      return;
     }
 
-    // Lógica de "Game Over" (por ejemplo, si Ash cae fuera del mapa)
+    // Si el jugador se ha caído fuera de la pantalla, mostrar 'Game Over'
     if (_ashPlayer.position.y > size.y) {
       mostrarGameOver();
     }
+  }
+
+  @override
+  void onRemove() {
+    super.onRemove(); // Llamar al método de eliminación de Flame
+    // Detener y limpiar todos los audios cuando el juego se cierra
+    FlameAudio.bgm.stop(); // Detener la música de fondo
   }
 }
