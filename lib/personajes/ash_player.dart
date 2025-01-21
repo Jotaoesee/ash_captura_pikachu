@@ -1,6 +1,4 @@
-import 'dart:ui';
 import 'package:flame/components.dart';
-import 'package:flame/game.dart';
 import 'package:flutter/services.dart';
 
 import '../Games/ash_captura_pikachu.dart';
@@ -12,7 +10,8 @@ class AshPlayer extends SpriteAnimationComponent
   // Propiedades relacionadas con el movimiento
   double velocidad = 150; // Velocidad horizontal en píxeles por segundo
   Vector2 direccion = Vector2.zero(); // Dirección del movimiento (-1, 0, 1)
-  double velocidadSalto = -300; // Velocidad inicial del salto en píxeles por segundo
+  double velocidadSalto =
+      -300; // Velocidad inicial del salto en píxeles por segundo
   double gravedad = 500; // Fuerza gravitacional que afecta al personaje
   double posicionSueloInicial = 0; // Posición Y inicial del suelo
   bool enElAire = false; // Indica si el personaje está saltando

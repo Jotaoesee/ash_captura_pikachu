@@ -11,7 +11,6 @@ import '../personajes/ash_player.dart';
 // Clase principal del juego que hereda de FlameGame
 class AshCapturaPikachu extends FlameGame
     with HasCollisionDetection, HasKeyboardHandlerComponents {
-
   late AshPlayer _ashPlayer; // Jugador Ash
   bool juegoEnCurso = false; // Estado del juego (si está en curso o no)
 
@@ -92,7 +91,8 @@ class AshCapturaPikachu extends FlameGame
   void iniciarJuego() {
     juegoEnCurso = true; // Marcar que el juego está en curso
     _ashPlayer.habilitarMovimiento(true); // Habilitar el movimiento del jugador
-    overlays.remove('MenuInicio'); // Eliminar la superposición del menú de inicio
+    overlays
+        .remove('MenuInicio'); // Eliminar la superposición del menú de inicio
 
     // Reproducir música de fondo (solo se ejecuta después de la interacción del usuario)
     FlameAudio.bgm.play('musica_fondo.mp3', volume: 0.5);
@@ -102,7 +102,8 @@ class AshCapturaPikachu extends FlameGame
   // Función que muestra el estado de 'Game Over'
   void mostrarGameOver() {
     juegoEnCurso = false; // Marcar que el juego ha terminado
-    _ashPlayer.habilitarMovimiento(false); // Deshabilitar el movimiento del jugador
+    _ashPlayer
+        .habilitarMovimiento(false); // Deshabilitar el movimiento del jugador
     overlays.add('GameOverMenu'); // Mostrar el menú de Game Over
   }
 
