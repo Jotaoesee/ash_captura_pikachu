@@ -1,3 +1,4 @@
+import 'package:ash_captura_pikachu/personajes/maya.dart';
 import 'package:ash_captura_pikachu/personajes/pikachu.dart';
 import 'package:flame/components.dart';
 import 'package:flame/events.dart';
@@ -6,12 +7,14 @@ import 'package:flame/parallax.dart';
 import 'package:flame_tiled/flame_tiled.dart';
 import 'package:flame_audio/flame_audio.dart';
 
-import '../personajes/ash_player.dart';
+import '../personajes/ash.dart';
 
 // Clase principal del juego que hereda de FlameGame
 class AshCapturaPikachu extends FlameGame
     with HasCollisionDetection, HasKeyboardHandlerComponents {
-  late AshPlayer _ashPlayer; // Jugador Ash
+  late Ash _ashPlayer; // Jugador Ash
+  late Maya _maya; // Jugador Ash
+
   bool juegoEnCurso = false; // Estado del juego (si está en curso o no)
 
   @override
@@ -23,6 +26,7 @@ class AshCapturaPikachu extends FlameGame
       'AshAndando.png',
       'Summer6.png',
       'PIKACHU.png',
+      'maya.png',
     ]);
 
     // Cargar el archivo de audio de música de fondo
@@ -75,12 +79,20 @@ class AshCapturaPikachu extends FlameGame
       }
 
       // Inicializar al jugador (Ash), en la posición (40, 655) y con movimiento deshabilitado inicialmente
-      _ashPlayer = AshPlayer(
+      _ashPlayer = Ash(
         position: Vector2(40, 655),
         movimientoHabilitado: false,
       );
 
       add(_ashPlayer); // Agregar al jugador al juego
+
+      // Inicializar a la jugadora (Maya), en la posición (40, 655) y con movimiento deshabilitado inicialmente
+      _maya = Maya(
+        position: Vector2(1840, 655),
+        movimientoHabilitado: false,
+      );
+
+      add(_maya); // Agregar a la jugadora al juego
     } catch (e) {
       // Si hay un error cargando el mapa, mostrarlo en consola
       print('Error cargando el mapa: $e');
@@ -89,12 +101,10 @@ class AshCapturaPikachu extends FlameGame
 
   // Función que inicia el juego
   void iniciarJuego() {
-    juegoEnCurso = true; // Marcar que el juego está en curso
-    _ashPlayer.habilitarMovimiento(true); // Habilitar el movimiento del jugador
-    overlays
-        .remove('MenuInicio'); // Eliminar la superposición del menú de inicio
-
-    // Reproducir música de fondo (solo se ejecuta después de la interacción del usuario)
+    juegoEnCurso = true;
+    _ashPlayer.habilitarMovimiento(true);
+    _maya.habilitarMovimiento(true); // Habilitar el movimiento de Maya
+    overlays.remove('MenuInicio');
     FlameAudio.bgm.play('musica_fondo.mp3', volume: 0.5);
     print("Reproduciendo música...");
   }

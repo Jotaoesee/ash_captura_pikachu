@@ -3,9 +3,9 @@ import 'package:flutter/services.dart';
 
 import '../Games/ash_captura_pikachu.dart';
 
-/// Clase que representa al personaje principal (Ash) en el juego.
-/// Esta clase maneja animaciones, movimiento y la interacción con el teclado.
-class AshPlayer extends SpriteAnimationComponent
+/// Clase que representa a Maya en el juego.
+/// Permite movimiento con las flechas del teclado y salto con el punto (.).
+class Maya extends SpriteAnimationComponent
     with HasGameReference<AshCapturaPikachu>, KeyboardHandler {
   // Propiedades relacionadas con el movimiento
   double velocidad = 150; // Velocidad horizontal en píxeles por segundo
@@ -24,11 +24,8 @@ class AshPlayer extends SpriteAnimationComponent
   late SpriteAnimation animacionQuieto; // Animación cuando está quieto
   bool mirandoIzquierda = false; // Controla la dirección en que mira el sprite
 
-  /// Getter para verificar si el movimiento está habilitado.
-  bool get estaHabilitado => _movimientoHabilitado;
-
   /// Constructor de la clase.
-  AshPlayer({
+  Maya({
     required Vector2 position,
     bool movimientoHabilitado = false,
   }) : super(size: Vector2.all(64), anchor: Anchor.center) {
@@ -37,37 +34,15 @@ class AshPlayer extends SpriteAnimationComponent
     _movimientoHabilitado = movimientoHabilitado;
   }
 
-  /// Habilita o deshabilita el movimiento del personaje.
-  void habilitarMovimiento(bool enabled) {
-    if (_movimientoHabilitado == enabled) return; // Evitar redundancia
-
-    _movimientoHabilitado = enabled;
-    print('Movimiento habilitado: $_movimientoHabilitado');
-    if (!enabled) {
-      resetearEstado(); // Restablecer estado si se desactiva
-    }
-  }
-
-  /// Reinicia las propiedades del personaje a su estado inicial.
-  void resetearEstado() {
-    direccion = Vector2.zero();
-    velocidadVertical = 0;
-    enElAire = false;
-    position.y = posicionSueloInicial;
-    animation = animacionQuieto;
-    playing = false;
-    animationTicker?.reset();
-  }
-
-  /// Carga las animaciones necesarias para el personaje.
+  /// Carga las animaciones necesarias para Maya.
   @override
   Future<void> onLoad() async {
     try {
-      await game.images.load('AshAndando.png');
+      await game.images.load('Maya.png');
 
       // Configurar la animación al caminar
       animacionCaminando = SpriteAnimation.fromFrameData(
-        game.images.fromCache('AshAndando.png'),
+        game.images.fromCache('Maya.png'),
         SpriteAnimationData.sequenced(
           amount: 4,
           textureSize: Vector2.all(64),
@@ -75,12 +50,12 @@ class AshPlayer extends SpriteAnimationComponent
         ),
       );
 
-      // Usar la misma animación para saltar (puedes cambiar esto si tienes una animación específica)
+      // Usar la misma animación para saltar
       animacionSaltando = animacionCaminando;
 
       // Configurar la animación cuando está quieto
       animacionQuieto = SpriteAnimation.fromFrameData(
-        game.images.fromCache('AshAndando.png'),
+        game.images.fromCache('Maya.png'),
         SpriteAnimationData.sequenced(
           amount: 1,
           textureSize: Vector2.all(64),
@@ -91,17 +66,22 @@ class AshPlayer extends SpriteAnimationComponent
       animation = animacionQuieto; // Animación inicial
       playing = false; // No reproducir la animación por defecto
     } catch (e) {
-      print('Error cargando animaciones de Ash: $e');
+      print('Error cargando animaciones de Maya: $e');
       rethrow; // Repropagar el error para manejarlo más arriba
     }
   }
 
   /// Activa el movimiento del personaje al iniciar el juego.
   void iniciarJuego() {
-    habilitarMovimiento(true);
+    _movimientoHabilitado = true;
   }
 
-  /// Inicia el salto del personaje si está habilitado y no está en el aire.
+  /// Habilita o deshabilita el movimiento del personaje.
+  void habilitarMovimiento(bool habilitado) {
+    _movimientoHabilitado = habilitado;
+  }
+
+  /// Inicia el salto del personaje si no está en el aire.
   void iniciarSalto() {
     if (!_movimientoHabilitado || enElAire) return;
 
@@ -115,9 +95,6 @@ class AshPlayer extends SpriteAnimationComponent
     super.update(dt);
 
     if (!_movimientoHabilitado) return;
-
-    // Limitar el tiempo de actualización para evitar movimientos bruscos
-    dt = dt.clamp(0, 0.016);
 
     // Actualizar posición horizontal
     position.x += direccion.x * velocidad * dt;
@@ -153,37 +130,38 @@ class AshPlayer extends SpriteAnimationComponent
     }
 
     // Cambiar la dirección del sprite al moverse
-    if (direccion.x < 0 && !mirandoIzquierda) {
+    if (direccion.x > 0 && !mirandoIzquierda) {
       flipHorizontally();
       mirandoIzquierda = true;
-    } else if (direccion.x > 0 && mirandoIzquierda) {
+    } else if (direccion.x < 0 && mirandoIzquierda) {
       flipHorizontally();
       mirandoIzquierda = false;
     }
   }
 
-  /// Maneja eventos del teclado para mover al personaje.
+  /// Maneja eventos del teclado para mover a Maya.
   @override
   bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> teclasPresionadas) {
     if (!_movimientoHabilitado) return true;
 
     // Eventos de tecla presionada o mantenida
     if (event is KeyDownEvent || event is KeyRepeatEvent) {
-      if (teclasPresionadas.contains(LogicalKeyboardKey.keyA)) {
+      if (teclasPresionadas.contains(LogicalKeyboardKey.arrowLeft)) {
         direccion.x = -1; // Mover a la izquierda
       }
-      if (teclasPresionadas.contains(LogicalKeyboardKey.keyD)) {
+      if (teclasPresionadas.contains(LogicalKeyboardKey.arrowRight)) {
         direccion.x = 1; // Mover a la derecha
       }
-      if (teclasPresionadas.contains(LogicalKeyboardKey.space)) {
-        iniciarSalto(); // Saltar
+      if (teclasPresionadas.contains(LogicalKeyboardKey.numpadDecimal)) {
+        iniciarSalto(); // Saltar con el punto (.)
       }
     } else if (event is KeyUpEvent) {
       // Eventos de tecla soltada
-      if (event.logicalKey == LogicalKeyboardKey.keyA && direccion.x < 0) {
+      if (event.logicalKey == LogicalKeyboardKey.arrowLeft && direccion.x < 0) {
         direccion.x = 0;
       }
-      if (event.logicalKey == LogicalKeyboardKey.keyD && direccion.x > 0) {
+      if (event.logicalKey == LogicalKeyboardKey.arrowRight &&
+          direccion.x > 0) {
         direccion.x = 0;
       }
     }

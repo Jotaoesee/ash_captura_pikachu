@@ -29,6 +29,7 @@ void main() {
                   decoration: BoxDecoration(
                     // ignore: deprecated_member_use
                     color: Colors.white
+                        // ignore: deprecated_member_use
                         .withOpacity(0.8), // Fondo semitransparente.
                     borderRadius:
                         BorderRadius.circular(15), // Bordes redondeados.
@@ -36,6 +37,7 @@ void main() {
                       BoxShadow(
                         // ignore: deprecated_member_use
                         color: Colors.black
+                            // ignore: deprecated_member_use
                             .withOpacity(0.3), // Sombra del contenedor.
                         blurRadius: 10,
                         offset:
