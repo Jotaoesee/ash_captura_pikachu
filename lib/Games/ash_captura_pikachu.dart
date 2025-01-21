@@ -88,7 +88,7 @@ class AshCapturaPikachu extends FlameGame
 
       // Inicializar a la jugadora (Maya), en la posición (40, 655) y con movimiento deshabilitado inicialmente
       _maya = Maya(
-        position: Vector2(1840, 655),
+        position: Vector2(1840, 753),
         movimientoHabilitado: false,
       );
 
