@@ -1,19 +1,24 @@
 import 'package:ash_captura_pikachu/Games/ash_captura_pikachu.dart';
+import 'package:ash_captura_pikachu/personajes/ash.dart';
+import 'package:ash_captura_pikachu/personajes/maya.dart';
 import 'package:flame/components.dart';
+import 'package:flame/collisions.dart';
+import 'package:flame_audio/flame_audio.dart';
 
 /// Clase que representa un Pikachu en el juego.
 /// Pikachu es el objetivo que Ash debe capturar.
-class Pikachu extends SpriteAnimationComponent with HasGameReference<AshCapturaPikachu> {
-
+class Pikachu extends SpriteAnimationComponent
+    with HasGameReference<AshCapturaPikachu>, CollisionCallbacks {
   /// Constructor de Pikachu
   ///
   /// Recibe la posición inicial del Pikachu en el mapa.
   Pikachu({
     required super.position,
   }) : super(
-    size: Vector2(50, 50), // Tamaño del sprite de Pikachu
-    anchor: Anchor.topCenter, // Punto de anclaje en la parte superior central
-  );
+          size: Vector2(50, 50), // Tamaño del sprite de Pikachu
+          anchor:
+              Anchor.topCenter, // Punto de anclaje en la parte superior central
+        );
 
   @override
   void onLoad() {
@@ -26,5 +31,15 @@ class Pikachu extends SpriteAnimationComponent with HasGameReference<AshCapturaP
         stepTime: 0.12, // Tiempo entre cada fotograma
       ),
     );
+    add(RectangleHitbox(size: Vector2(50, 50))); // Ajusta el tamaño del hitbox
+  }
+
+  @override
+  void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
+    super.onCollision(intersectionPoints, other);
+    if (other is Ash || other is Maya) {
+      FlameAudio.play('pikachu_sound.mp3');
+      removeFromParent();
+    }
   }
 }

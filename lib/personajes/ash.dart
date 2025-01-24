@@ -1,19 +1,24 @@
 import 'package:flame/components.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flame/collisions.dart';
 
 import '../Games/ash_captura_pikachu.dart';
 
 /// Clase que representa al personaje principal (Ash) en el juego.
 /// Esta clase maneja animaciones, movimiento y la interacción con el teclado.
 class Ash extends SpriteAnimationComponent
-    with HasGameReference<AshCapturaPikachu>, KeyboardHandler {
+    with
+        HasGameReference<AshCapturaPikachu>,
+        KeyboardHandler,
+        CollisionCallbacks {
   // Propiedades relacionadas con el movimiento
   double velocidad = 150; // Velocidad horizontal en píxeles por segundo
   Vector2 direccion = Vector2.zero(); // Dirección del movimiento (-1, 0, 1)
   double velocidadSalto =
       -300; // Velocidad inicial del salto en píxeles por segundo
   double gravedad = 500; // Fuerza gravitacional que afecta al personaje
-  double posicionSueloInicial = 0; // Posición Y inicial del suelo
+  late double posicionSueloInicial; // Posición Y inicial del suelo
   bool enElAire = false; // Indica si el personaje está saltando
   double velocidadVertical = 0; // Velocidad vertical durante el salto/caída
   bool _movimientoHabilitado = false; // Controla si el movimiento está activo
@@ -37,35 +42,10 @@ class Ash extends SpriteAnimationComponent
     _movimientoHabilitado = movimientoHabilitado;
   }
 
-  /// Habilita o deshabilita el movimiento del personaje.
-  void habilitarMovimiento(bool enabled) {
-    if (_movimientoHabilitado == enabled) return; // Evitar redundancia
-
-    _movimientoHabilitado = enabled;
-    print('Movimiento habilitado: $_movimientoHabilitado');
-    if (!enabled) {
-      resetearEstado(); // Restablecer estado si se desactiva
-    }
-  }
-
-  /// Reinicia las propiedades del personaje a su estado inicial.
-  void resetearEstado() {
-    direccion = Vector2.zero();
-    velocidadVertical = 0;
-    enElAire = false;
-    position.y = posicionSueloInicial;
-    animation = animacionQuieto;
-    playing = false;
-    animationTicker?.reset();
-  }
-
-  /// Carga las animaciones necesarias para el personaje.
   @override
   Future<void> onLoad() async {
+    await super.onLoad();
     try {
-      await game.images.load('AshAndando.png');
-
-      // Configurar la animación al caminar
       animacionCaminando = SpriteAnimation.fromFrameData(
         game.images.fromCache('AshAndando.png'),
         SpriteAnimationData.sequenced(
@@ -91,17 +71,35 @@ class Ash extends SpriteAnimationComponent
       animation = animacionQuieto; // Animación inicial
       playing = false; // No reproducir la animación por defecto
     } catch (e) {
-      print('Error cargando animaciones de Ash: $e');
+      if (kDebugMode) {
+        print('Error cargando animaciones de Ash: $e');
+      }
       rethrow; // Repropagar el error para manejarlo más arriba
     }
+    final hitboxWidth = 32.0; // Ancho fijo en píxeles
+    final hitboxHeight = 50.0; // Altura fija en píxeles
+    final hitboxPosition =
+        Vector2(16.0, 1.0); // Ajustes manuales para la posición
+
+    // Añadir la hitbox personalizada
+    add(RectangleHitbox(
+      size: Vector2(hitboxWidth, hitboxHeight), // Tamaño de la hitbox
+      position: hitboxPosition, // Posición relativa al sprite
+      collisionType: CollisionType.active,
+    )..debugColor = const Color(0xFF0033FF));
   }
 
   /// Activa el movimiento del personaje al iniciar el juego.
   void iniciarJuego() {
-    habilitarMovimiento(true);
+    _movimientoHabilitado = true;
   }
 
-  /// Inicia el salto del personaje si está habilitado y no está en el aire.
+  /// Habilita o deshabilita el movimiento del personaje.
+  void habilitarMovimiento(bool habilitado) {
+    _movimientoHabilitado = habilitado;
+  }
+
+  /// Inicia el salto del personaje si no está en el aire.
   void iniciarSalto() {
     if (!_movimientoHabilitado || enElAire) return;
 
@@ -115,9 +113,6 @@ class Ash extends SpriteAnimationComponent
     super.update(dt);
 
     if (!_movimientoHabilitado) return;
-
-    // Limitar el tiempo de actualización para evitar movimientos bruscos
-    dt = dt.clamp(0, 0.016);
 
     // Actualizar posición horizontal
     position.x += direccion.x * velocidad * dt;
@@ -153,16 +148,16 @@ class Ash extends SpriteAnimationComponent
     }
 
     // Cambiar la dirección del sprite al moverse
-    if (direccion.x < 0 && !mirandoIzquierda) {
-      flipHorizontally();
-      mirandoIzquierda = true;
-    } else if (direccion.x > 0 && mirandoIzquierda) {
-      flipHorizontally();
+    if (direccion.x > 0 && mirandoIzquierda) {
+      flipHorizontally(); // Voltear a la derecha
       mirandoIzquierda = false;
+    } else if (direccion.x < 0 && !mirandoIzquierda) {
+      flipHorizontally(); // Voltear a la izquierda
+      mirandoIzquierda = true;
     }
   }
 
-  /// Maneja eventos del teclado para mover al personaje.
+  /// Maneja eventos del teclado para mover a Maya.
   @override
   bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> teclasPresionadas) {
     if (!_movimientoHabilitado) return true;
@@ -176,15 +171,15 @@ class Ash extends SpriteAnimationComponent
         direccion.x = 1; // Mover a la derecha
       }
       if (teclasPresionadas.contains(LogicalKeyboardKey.space)) {
-        iniciarSalto(); // Saltar
+        iniciarSalto(); // Saltar con el espacio
       }
     } else if (event is KeyUpEvent) {
       // Eventos de tecla soltada
       if (event.logicalKey == LogicalKeyboardKey.keyA && direccion.x < 0) {
-        direccion.x = 0;
+        direccion.x = 0; // Detener movimiento a la izquierda
       }
       if (event.logicalKey == LogicalKeyboardKey.keyD && direccion.x > 0) {
-        direccion.x = 0;
+        direccion.x = 0; // Detener movimiento a la derecha
       }
     }
 

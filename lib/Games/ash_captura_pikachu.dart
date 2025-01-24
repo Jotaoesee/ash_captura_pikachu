@@ -44,7 +44,8 @@ class AshCapturaPikachu extends FlameGame
       [
         ParallaxImageData('Summer6.png'),
       ],
-      baseVelocity: Vector2.zero(), // No se moverá el fondo
+      baseVelocity: Vector2(7, 0),
+      velocityMultiplierDelta: Vector2(1.2, 1.0), // No se moverá el fondo
       size: size,
     );
     add(fondo); // Agregar el fondo al juego
@@ -109,6 +110,8 @@ class AshCapturaPikachu extends FlameGame
     print("Reproduciendo música...");
   }
 
+  @override
+  bool debugMode = true; // Habilitar el modo de depuración
   // Función que muestra el estado de 'Game Over'
   void mostrarGameOver() {
     juegoEnCurso = false; // Marcar que el juego ha terminado

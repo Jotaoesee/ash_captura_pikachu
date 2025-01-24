@@ -65,5 +65,7 @@ flutter:
     - assets/tiles/mapa.tmx
     - assets/tiles/tilesets/paleta.tsx
     - assets/audio/musica_fondo.mp3
+    - assets/audio/pikachu_sound.mp3
+
 
 

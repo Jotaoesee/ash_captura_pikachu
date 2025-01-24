@@ -1,4 +1,6 @@
 import 'package:flame/components.dart';
+import 'package:flame/collisions.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../Games/ash_captura_pikachu.dart';
@@ -6,23 +8,29 @@ import '../Games/ash_captura_pikachu.dart';
 /// Clase que representa a Maya en el juego.
 /// Permite movimiento con las flechas del teclado y salto con el punto (.).
 class Maya extends SpriteAnimationComponent
-    with HasGameReference<AshCapturaPikachu>, KeyboardHandler {
+    with
+        HasGameReference<AshCapturaPikachu>,
+        KeyboardHandler,
+        CollisionCallbacks {
   // Propiedades relacionadas con el movimiento
   double velocidad = 150; // Velocidad horizontal en píxeles por segundo
   Vector2 direccion = Vector2.zero(); // Dirección del movimiento (-1, 0, 1)
   double velocidadSalto =
       -300; // Velocidad inicial del salto en píxeles por segundo
   double gravedad = 500; // Fuerza gravitacional que afecta al personaje
-  double posicionSueloInicial = 0; // Posición Y inicial del suelo
+  late double posicionSueloInicial; // Posición Y inicial del suelo
   bool enElAire = false; // Indica si el personaje está saltando
   double velocidadVertical = 0; // Velocidad vertical durante el salto/caída
-  bool _movimientoHabilitado = false; // Controla si el movimiento está activo
+  late bool _movimientoHabilitado; // Controla si el movimiento está activo
 
   // Animaciones del personaje
   late SpriteAnimation animacionCaminando; // Animación al caminar
   late SpriteAnimation animacionSaltando; // Animación al saltar
   late SpriteAnimation animacionQuieto; // Animación cuando está quieto
   bool mirandoIzquierda = false; // Controla la dirección en que mira el sprite
+
+  /// Getter para verificar si el movimiento está habilitado.
+  bool get estaHabilitado => _movimientoHabilitado;
 
   /// Constructor de la clase.
   Maya({
@@ -37,6 +45,7 @@ class Maya extends SpriteAnimationComponent
   /// Carga las animaciones necesarias para Maya.
   @override
   Future<void> onLoad() async {
+    await super.onLoad();
     try {
       await game.images.load('Maya.png');
 
@@ -66,9 +75,22 @@ class Maya extends SpriteAnimationComponent
       animation = animacionQuieto; // Animación inicial
       playing = false; // No reproducir la animación por defecto
     } catch (e) {
-      print('Error cargando animaciones de Maya: $e');
+      if (kDebugMode) {
+        print('Error cargando animaciones de Maya: $e');
+      }
       rethrow; // Repropagar el error para manejarlo más arriba
     }
+    final hitboxWidth = 32.0; // Ancho fijo en píxeles
+    final hitboxHeight = 50.0; // Altura fija en píxeles
+    final hitboxPosition =
+        Vector2(18.0, 1.0); // Ajustes manuales para la posición
+
+    // Añadir la hitbox personalizada
+    add(RectangleHitbox(
+      size: Vector2(hitboxWidth, hitboxHeight), // Tamaño de la hitbox
+      position: hitboxPosition, // Posición relativa al sprite
+      collisionType: CollisionType.active,
+    )..debugColor = const Color(0xFF0033FF));
   }
 
   /// Activa el movimiento del personaje al iniciar el juego.
