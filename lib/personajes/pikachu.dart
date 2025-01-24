@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:ash_captura_pikachu/Games/ash_captura_pikachu.dart';
 import 'package:ash_captura_pikachu/personajes/ash.dart';
 import 'package:ash_captura_pikachu/personajes/maya.dart';
@@ -31,7 +33,18 @@ class Pikachu extends SpriteAnimationComponent
         stepTime: 0.12, // Tiempo entre cada fotograma
       ),
     );
-    add(RectangleHitbox(size: Vector2(50, 50))); // Ajusta el tamaño del hitbox
+
+    final hitboxWidth = 23.0; // Ancho fijo en píxeles
+    final hitboxHeight = 32.0; // Altura fija en píxeles
+    final hitboxPosition =
+        Vector2(1.0, 1.0); // Ajustes manuales para la posición
+
+    // Añadir la hitbox personalizada
+    add(RectangleHitbox(
+      size: Vector2(hitboxWidth, hitboxHeight), // Tamaño de la hitbox
+      position: hitboxPosition, // Posición relativa al sprite
+      collisionType: CollisionType.active,
+    )..debugColor = const Color(0xFF0033FF));
   }
 
   @override
