@@ -81,7 +81,7 @@ class MyApp extends StatelessWidget {
                   ),
                   child: ElevatedButton(
                     onPressed: () {
-                      game.overlays.remove('GameOver');
+                      game.overlays.remove('GameOverMenu');
                       game.iniciarJuego();
                     },
                     child: const Text('Reiniciar Juego'),

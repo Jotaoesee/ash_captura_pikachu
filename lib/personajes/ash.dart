@@ -1,42 +1,37 @@
+import 'package:ash_captura_pikachu/personajes/pikachu.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:flame/collisions.dart';
-
+import 'package:flutter/services.dart';
 import '../Games/ash_captura_pikachu.dart';
 
-/// Clase que representa al personaje principal (Ash) en el juego.
-/// Esta clase maneja animaciones, movimiento y la interacción con el teclado.
 class Ash extends SpriteAnimationComponent
     with
         HasGameReference<AshCapturaPikachu>,
         KeyboardHandler,
         CollisionCallbacks {
-  // Propiedades relacionadas con el movimiento
-  double velocidad = 150; // Velocidad horizontal en píxeles por segundo
-  Vector2 direccion = Vector2.zero(); // Dirección del movimiento (-1, 0, 1)
-  double velocidadSalto =
-      -300; // Velocidad inicial del salto en píxeles por segundo
-  double gravedad = 500; // Fuerza gravitacional que afecta al personaje
-  late double posicionSueloInicial; // Posición Y inicial del suelo
-  bool enElAire = false; // Indica si el personaje está saltando
-  double velocidadVertical = 0; // Velocidad vertical durante el salto/caída
-  bool _movimientoHabilitado = false; // Controla si el movimiento está activo
+  final Vector2 velocidad = Vector2.zero();
+  Vector2 direccion = Vector2.zero();
+  bool enElSuelo = false;
+  double velocidadSalto = -300;
+  double gravedad = 500;
+  late double posicionSueloInicial;
+  bool enElAire = false;
+  double velocidadVertical = 0;
+  bool _movimientoHabilitado = false;
+  final double aceleracion = 200;
 
-  // Animaciones del personaje
-  late SpriteAnimation animacionCaminando; // Animación al caminar
-  late SpriteAnimation animacionSaltando; // Animación al saltar
-  late SpriteAnimation animacionQuieto; // Animación cuando está quieto
-  bool mirandoIzquierda = false; // Controla la dirección en que mira el sprite
+  late SpriteAnimation animacionCaminando;
+  late SpriteAnimation animacionSaltando;
+  late SpriteAnimation animacionQuieto;
+  bool mirandoIzquierda = false;
 
-  /// Getter para verificar si el movimiento está habilitado.
   bool get estaHabilitado => _movimientoHabilitado;
 
-  /// Constructor de la clase.
   Ash({
     required Vector2 position,
     bool movimientoHabilitado = false,
-  }) : super(size: Vector2.all(64), anchor: Anchor.center) {
+  }) : super(size: Vector2(64, 64), anchor: Anchor.center) {
     this.position = position;
     posicionSueloInicial = position.y;
     _movimientoHabilitado = movimientoHabilitado;
@@ -55,10 +50,8 @@ class Ash extends SpriteAnimationComponent
         ),
       );
 
-      // Usar la misma animación para saltar (puedes cambiar esto si tienes una animación específica)
       animacionSaltando = animacionCaminando;
 
-      // Configurar la animación cuando está quieto
       animacionQuieto = SpriteAnimation.fromFrameData(
         game.images.fromCache('AshAndando.png'),
         SpriteAnimationData.sequenced(
@@ -68,121 +61,114 @@ class Ash extends SpriteAnimationComponent
         ),
       );
 
-      animation = animacionQuieto; // Animación inicial
-      playing = false; // No reproducir la animación por defecto
+      animation = animacionQuieto;
+      playing = false;
+
+      final hitboxWidth = 32.0;
+      final hitboxHeight = 50.0;
+      final hitboxPosition = Vector2(16.0, 1.0);
+
+      final hitbox = RectangleHitbox(
+        size: Vector2(hitboxWidth, hitboxHeight),
+        position: hitboxPosition,
+        collisionType: CollisionType.active,
+      )..debugMode = true;
+
+      add(hitbox);
+
+      if (kDebugMode) {
+        print(
+            'Hitbox añadido: tamaño=$hitboxWidth x $hitboxHeight, posición=$hitboxPosition');
+      }
     } catch (e) {
       if (kDebugMode) {
         print('Error cargando animaciones de Ash: $e');
       }
-      rethrow; // Repropagar el error para manejarlo más arriba
+      rethrow;
     }
-    final hitboxWidth = 32.0; // Ancho fijo en píxeles
-    final hitboxHeight = 50.0; // Altura fija en píxeles
-    final hitboxPosition =
-        Vector2(16.0, 1.0); // Ajustes manuales para la posición
-
-    // Añadir la hitbox personalizada
-    add(RectangleHitbox(
-      size: Vector2(hitboxWidth, hitboxHeight), // Tamaño de la hitbox
-      position: hitboxPosition, // Posición relativa al sprite
-      collisionType: CollisionType.active,
-    )..debugColor = const Color(0xFF0033FF));
   }
 
-  /// Activa el movimiento del personaje al iniciar el juego.
-  void iniciarJuego() {
-    _movimientoHabilitado = true;
-  }
-
-  /// Habilita o deshabilita el movimiento del personaje.
   void habilitarMovimiento(bool habilitado) {
     _movimientoHabilitado = habilitado;
   }
 
-  /// Inicia el salto del personaje si no está en el aire.
-  void iniciarSalto() {
-    if (!_movimientoHabilitado || enElAire) return;
-
-    enElAire = true;
-    velocidadVertical = velocidadSalto;
-  }
-
-  /// Actualiza el estado del personaje en cada frame.
   @override
   void update(double dt) {
     super.update(dt);
 
-    if (!_movimientoHabilitado) return;
+    if (_movimientoHabilitado) {
+      velocidad.x = direccion.x.clamp(-1, 1) * aceleracion;
 
-    // Actualizar posición horizontal
-    position.x += direccion.x * velocidad * dt;
+      if (enElSuelo) {
+        velocidad.y = 0;
+        if (velocidad.x != 0) {
+          animation = animacionCaminando; // Cambiar a animación de caminar
+          playing = true;
+        } else {
+          animation = animacionQuieto; // Cambiar a animación de estar quieto
+          playing = false;
+        }
+      } else {
+        velocidad.y += gravedad * dt;
 
-    // Manejar salto y gravedad
-    if (enElAire) {
-      velocidadVertical += gravedad * dt;
-      position.y += velocidadVertical * dt;
+        if (velocidad.y.isFinite) {
+          velocidad.y =
+              velocidad.y.clamp(-velocidadSalto.abs(), velocidadSalto.abs());
+        } else {
+          velocidad.y = 0;
+        }
 
-      // Detener caída cuando toca el suelo
-      if (position.y >= posicionSueloInicial) {
-        position.y = posicionSueloInicial;
-        enElAire = false;
-        velocidadVertical = 0;
+        animation = animacionSaltando; // Cambiar a animación de saltar
+        playing = true;
       }
-    }
 
-    // Actualizar la animación según el estado actual
-    actualizarAnimacion();
-  }
-
-  /// Cambia la animación según el estado actual del personaje.
-  void actualizarAnimacion() {
-    if (enElAire) {
-      animation = animacionSaltando;
-    } else if (direccion.x != 0) {
-      animation = animacionCaminando;
-      playing = true;
-    } else {
-      animation = animacionQuieto;
-      playing = false;
-      animationTicker?.reset();
-    }
-
-    // Cambiar la dirección del sprite al moverse
-    if (direccion.x > 0 && mirandoIzquierda) {
-      flipHorizontally(); // Voltear a la derecha
-      mirandoIzquierda = false;
-    } else if (direccion.x < 0 && !mirandoIzquierda) {
-      flipHorizontally(); // Voltear a la izquierda
-      mirandoIzquierda = true;
+      // Aplicar la velocidad a la posición
+      position += velocidad * dt;
     }
   }
 
-  /// Maneja eventos del teclado para mover a Maya.
   @override
-  bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> teclasPresionadas) {
-    if (!_movimientoHabilitado) return true;
-
-    // Eventos de tecla presionada o mantenida
-    if (event is KeyDownEvent || event is KeyRepeatEvent) {
-      if (teclasPresionadas.contains(LogicalKeyboardKey.keyA)) {
+  bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> keysPressed) {
+    if (event is KeyDownEvent) {
+      if (event.logicalKey == LogicalKeyboardKey.keyA) {
         direccion.x = -1; // Mover a la izquierda
-      }
-      if (teclasPresionadas.contains(LogicalKeyboardKey.keyD)) {
+      } else if (event.logicalKey == LogicalKeyboardKey.keyD) {
         direccion.x = 1; // Mover a la derecha
-      }
-      if (teclasPresionadas.contains(LogicalKeyboardKey.space)) {
-        iniciarSalto(); // Saltar con el espacio
+      } else if (event.logicalKey == LogicalKeyboardKey.space) {
+        if (enElSuelo) {
+          velocidad.y = velocidadSalto; // Saltar
+          enElSuelo = false;
+        }
       }
     } else if (event is KeyUpEvent) {
-      // Eventos de tecla soltada
-      if (event.logicalKey == LogicalKeyboardKey.keyA && direccion.x < 0) {
-        direccion.x = 0; // Detener movimiento a la izquierda
-      }
-      if (event.logicalKey == LogicalKeyboardKey.keyD && direccion.x > 0) {
-        direccion.x = 0; // Detener movimiento a la derecha
+      if (event.logicalKey == LogicalKeyboardKey.keyA ||
+          event.logicalKey == LogicalKeyboardKey.keyD) {
+        direccion.x = 0; // Detener el movimiento
       }
     }
-
     return true;
+  }
+
+  @override
+  void onCollisionStart(
+      Set<Vector2> intersectionPoints, PositionComponent other) {
+    super.onCollisionStart(intersectionPoints, other);
+
+    if (other is RectangleHitbox) {
+      enElSuelo = true;
+      velocidad.y = 0;
+    } else if (other is Pikachu) {
+      print('Ash ha capturado un Pikachu!');
+      // Lógica para capturar un Pikachu
+    }
+  }
+
+  @override
+  void onCollisionEnd(PositionComponent other) {
+    super.onCollisionEnd(other);
+
+    if (other is RectangleHitbox) {
+      enElSuelo = false;
+    }
   }
 }
