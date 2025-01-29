@@ -3,15 +3,15 @@ import 'package:flame/game.dart';
 import 'package:ash_captura_pikachu/Games/ash_captura_pikachu.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const MiApp());
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MiApp extends StatelessWidget {
+  const MiApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final gameInstance = AshCapturaPikachu();
+    final instanciaDelJuego = AshCapturaPikachu();
 
     return MaterialApp(
       title: 'Ash Captura Pikachu',
@@ -20,24 +20,23 @@ class MyApp extends StatelessWidget {
       ),
       home: Scaffold(
         body: GameWidget<AshCapturaPikachu>.controlled(
-          gameFactory: () => gameInstance,
+          gameFactory: () => instanciaDelJuego,
           // Configuración de los overlays, mapas de widgets superpuestos al juego.
           overlayBuilderMap: {
-            'MenuInicio': (context, AshCapturaPikachu game) {
-              // Overlay de inicio que muestra un menú inicial con un botón para empezar el juego.
+            'MenuInicio': (context, AshCapturaPikachu juego) {
+              // Overlay de inicio que muestra un menú con un botón para empezar el juego.
               return Center(
                 child: Container(
                   padding: const EdgeInsets.all(
                       20), // Espaciado interno del contenedor.
                   decoration: BoxDecoration(
-                    // ignore: deprecated_member_use
+                    // Establecemos el color de fondo del contenedor.
                     color: Colors.white
                         .withOpacity(0.8), // Fondo semitransparente.
                     borderRadius:
                         BorderRadius.circular(15), // Bordes redondeados.
                     boxShadow: [
                       BoxShadow(
-                        // ignore: deprecated_member_use
                         color: Colors.black
                             .withOpacity(0.3), // Sombra del contenedor.
                         blurRadius: 10,
@@ -48,29 +47,29 @@ class MyApp extends StatelessWidget {
                   ),
                   child: ElevatedButton(
                     onPressed: () {
-                      game.overlays.remove('MenuInicio');
-                      game.iniciarJuego();
+                      // Elimina el overlay del menú de inicio y comienza el juego.
+                      juego.overlays.remove('MenuInicio');
+                      juego.iniciarJuego();
                     },
                     child: const Text('Iniciar Juego'),
                   ),
                 ),
               );
             },
-            'GameOver': (context, AshCapturaPikachu game) {
+            'GameOver': (context, AshCapturaPikachu juego) {
               // Overlay de Game Over que muestra un mensaje y un botón para reiniciar el juego.
               return Center(
                 child: Container(
                   padding: const EdgeInsets.all(
                       20), // Espaciado interno del contenedor.
                   decoration: BoxDecoration(
-                    // ignore: deprecated_member_use
+                    // Establecemos el color de fondo del contenedor.
                     color: Colors.white
                         .withOpacity(0.8), // Fondo semitransparente.
                     borderRadius:
                         BorderRadius.circular(15), // Bordes redondeados.
                     boxShadow: [
                       BoxShadow(
-                        // ignore: deprecated_member_use
                         color: Colors.black
                             .withOpacity(0.3), // Sombra del contenedor.
                         blurRadius: 10,
@@ -81,8 +80,9 @@ class MyApp extends StatelessWidget {
                   ),
                   child: ElevatedButton(
                     onPressed: () {
-                      game.overlays.remove('GameOverMenu');
-                      game.iniciarJuego();
+                      // Elimina el overlay de "GameOverMenu" y reinicia el juego.
+                      juego.overlays.remove('GameOver');
+                      juego.iniciarJuego();
                     },
                     child: const Text('Reiniciar Juego'),
                   ),
@@ -90,7 +90,9 @@ class MyApp extends StatelessWidget {
               );
             },
           },
-          initialActiveOverlays: const ['MenuInicio'],
+          initialActiveOverlays: const [
+            'MenuInicio'
+          ], // Iniciar con el overlay de inicio visible.
         ),
       ),
     );

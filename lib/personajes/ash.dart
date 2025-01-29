@@ -142,12 +142,16 @@ class Ash extends SpriteAnimationComponent
   void actualizarAnimacion() {
     if (enElAire) {
       animation = animacionSaltando;
+      playing =
+          true; // Asegúrate de que la animación se reproduzca mientras salta
     } else if (direccion.x != 0) {
       animation = animacionCaminando;
-      playing = true;
+      playing =
+          true; // Esto activa la animación de caminar cuando el personaje se mueve
     } else {
       animation = animacionQuieto;
-      playing = false;
+      playing =
+          false; // Esto desactiva la animación de caminar cuando el personaje está quieto
       animationTicker?.reset();
     }
 
@@ -195,21 +199,21 @@ class Ash extends SpriteAnimationComponent
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     super.onCollision(intersectionPoints, other);
 
-    if (other is ColisionPlataforma) {
-      print(
-          "🔹 Ash ha colisionado con una plataforma en y: ${other.position.y}");
+    // Verifica si la colisión es con un Rectángulo Hitbox
+    if (other is PositionComponent &&
+        other.children.any((c) => c is RectangleHitbox)) {
+      // Solo si la velocidad vertical es positiva (cayendo) y está en el aire
+      if (velocidadVertical > 0 && enElAire) {
+        print("✅ Ash ha tocado el suelo");
 
-      // Obtener la posición superior de la plataforma
-      double plataformaTop = other.position.y;
-      double ashBottom = position.y + size.y / 2;
+        // Ajustar la posición para evitar rebotes
+        final hitbox = other.children.firstWhere((c) => c is RectangleHitbox)
+            as RectangleHitbox;
+        position.y = other.position.y - size.y + hitbox.position.y + 50;
 
-      // Verificar si Ash está cayendo y toca la parte superior de la plataforma
-      if (velocidadVertical > 0 && ashBottom >= plataformaTop - 5) {
-        position.y =
-            plataformaTop - size.y / 2; // Ajustarlo sobre la plataforma
-        velocidadVertical = 0; // Detener la velocidad de caída
-        enElAire = false; // Indicar que está en el suelo
-        print("✅ Ash aterrizó en la plataforma en y: ${position.y}");
+        // Detener la caída
+        velocidadVertical = 0;
+        enElAire = false;
       }
     }
   }

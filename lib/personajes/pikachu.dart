@@ -34,24 +34,29 @@ class Pikachu extends SpriteAnimationComponent
       ),
     );
 
-    final hitboxWidth = 23.0; // Ancho fijo en píxeles
-    final hitboxHeight = 32.0; // Altura fija en píxeles
-    final hitboxPosition =
+    final anchoHitbox = 23.0; // Ancho fijo en píxeles
+    final alturaHitbox = 32.0; // Altura fija en píxeles
+    final posicionHitbox =
         Vector2(1.0, 1.0); // Ajustes manuales para la posición
 
     // Añadir la hitbox personalizada
     add(RectangleHitbox(
-      size: Vector2(hitboxWidth, hitboxHeight), // Tamaño de la hitbox
-      position: hitboxPosition, // Posición relativa al sprite
+      size: Vector2(anchoHitbox, alturaHitbox), // Tamaño de la hitbox
+      position: posicionHitbox, // Posición relativa al sprite
       collisionType: CollisionType.active,
-    )..debugColor = const Color(0xFF0033FF));
+    )..debugColor = const Color(0xFF0033FF)); // Color para depuración de hitbox
   }
 
   @override
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     super.onCollision(intersectionPoints, other);
+
+    // Verifica si la colisión es con Ash o Maya
     if (other is Ash || other is Maya) {
+      // Reproduce el sonido de Pikachu
       FlameAudio.play('pikachu_sound.mp3');
+
+      // Elimina el Pikachu del juego
       removeFromParent();
     }
   }
