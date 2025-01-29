@@ -199,11 +199,16 @@ class Ash extends SpriteAnimationComponent
       print(
           "🔹 Ash ha colisionado con una plataforma en y: ${other.position.y}");
 
-      // Verificar si Ash está cayendo y colisiona con la parte superior de la plataforma
-      if (velocidadVertical > 0 && position.y + size.y >= other.position.y) {
-        position.y = other.position.y - size.y; // Ajustar la posición de Ash
-        velocidadVertical = 0; // Detener la caída
-        enElAire = false; // Indicar que está en tierra
+      // Obtener la posición superior de la plataforma
+      double plataformaTop = other.position.y;
+      double ashBottom = position.y + size.y / 2;
+
+      // Verificar si Ash está cayendo y toca la parte superior de la plataforma
+      if (velocidadVertical > 0 && ashBottom >= plataformaTop - 5) {
+        position.y =
+            plataformaTop - size.y / 2; // Ajustarlo sobre la plataforma
+        velocidadVertical = 0; // Detener la velocidad de caída
+        enElAire = false; // Indicar que está en el suelo
         print("✅ Ash aterrizó en la plataforma en y: ${position.y}");
       }
     }
@@ -214,9 +219,10 @@ class Ash extends SpriteAnimationComponent
     super.onCollisionEnd(other);
 
     if (other is ColisionPlataforma) {
+      // Si deja de colisionar con una plataforma, vuelve a estar en el aire
+      enElAire = true;
       print(
           "🔺 Ash dejó de estar en contacto con la plataforma, vuelve a caer.");
-      enElAire = true;
     }
   }
 }
