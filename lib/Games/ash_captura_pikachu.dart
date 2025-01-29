@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:ash_captura_pikachu/colisiones/colision_plataforma.dart';
 import 'package:ash_captura_pikachu/personajes/maya.dart';
 import 'package:ash_captura_pikachu/personajes/pikachu.dart';
 import 'package:flame/components.dart';
@@ -57,45 +60,53 @@ class AshCapturaPikachu extends FlameGame
   // Función que inicializa los componentes del juego
   void inicializarComponentes() async {
     try {
-      // Cargar el mapa Tiled desde el archivo .tmx
       final TiledComponent mapa = await TiledComponent.load(
         "mapa.tmx",
-        Vector2(48, 48), // Definir el tamaño de cada tile (48x48)
+        Vector2(48, 48),
       );
 
-      // Escalar el mapa
       mapa.scale = Vector2(1.34, 1);
-      add(mapa); // Agregar el mapa al juego
+      add(mapa);
 
-      // Obtener los objetos del grupo 'pikachu' desde el mapa
-      final objectGroupPikachu = mapa.tileMap.getLayer<ObjectGroup>('pikachu');
-      // Agregar los personajes Pikachu en las posiciones definidas en el mapa
-      for (final posPikachuEnMapa in objectGroupPikachu!.objects) {
-        add(Pikachu(
-          position: Vector2(
-            posPikachuEnMapa.x * 1.34,
-            posPikachuEnMapa.y * 1,
-          ),
-        ));
+      // Inicializar plataformas
+      final ObjectGroup? colisiones =
+          mapa.tileMap.getLayer<ObjectGroup>('colisiones');
+      if (colisiones != null) {
+        for (final objeto in colisiones.objects) {
+          final plataforma = ColisionPlataforma(
+            position: Vector2(objeto.x * 1.34, objeto.y * 1),
+            size: Vector2(objeto.width * 1.34, objeto.height * 1),
+          );
+          add(plataforma);
+        }
       }
 
-      // Inicializar al jugador (Ash), en la posición (40, 655) y con movimiento deshabilitado inicialmente
-      _ashPlayer = Ash(
-        position: Vector2(40, 655),
-        movimientoHabilitado: false,
-      );
+      // Agregar los Pikachus desde el mapa
+      final ObjectGroup? objectGroupPikachu =
+          mapa.tileMap.getLayer<ObjectGroup>('pikachu');
+      if (objectGroupPikachu != null) {
+        for (final posPikachuEnMapa in objectGroupPikachu.objects) {
+          final pikachu = Pikachu(
+            position:
+                Vector2(posPikachuEnMapa.x * 1.34, posPikachuEnMapa.y * 1),
+          );
+          add(pikachu);
+          print("⚡ Pikachu agregado en posición: ${pikachu.position}");
+        }
+      } else {
+        print("⚠ No se encontraron Pikachus en el mapa.");
+      }
 
-      add(_ashPlayer); // Agregar al jugador al juego
+      // ✅ Inicializar Ash ANTES de llamar a iniciarJuego()
+      _ashPlayer = Ash(position: Vector2(40, 550), movimientoHabilitado: false);
+      add(_ashPlayer);
 
-      // Inicializar a la jugadora (Maya), en la posición (40, 655) y con movimiento deshabilitado inicialmente
-      _maya = Maya(
-        position: Vector2(1840, 753),
-        movimientoHabilitado: false,
-      );
+      // ✅ Inicializar Maya antes de ser usado en iniciarJuego()
+      _maya = Maya(position: Vector2(1840, 753), movimientoHabilitado: false);
+      add(_maya);
 
-      add(_maya); // Agregar a la jugadora al juego
+      print("✅ Ash y Maya han sido inicializados correctamente.");
     } catch (e) {
-      // Si hay un error cargando el mapa, mostrarlo en consola
       print('Error cargando el mapa: $e');
     }
   }

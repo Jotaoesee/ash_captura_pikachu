@@ -1,3 +1,4 @@
+import 'package:ash_captura_pikachu/colisiones/colision_plataforma.dart';
 import 'package:flame/components.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -38,7 +39,6 @@ class Ash extends SpriteAnimationComponent
     bool movimientoHabilitado = false,
   }) : super(size: Vector2.all(64), anchor: Anchor.center) {
     this.position = position;
-    posicionSueloInicial = position.y;
     _movimientoHabilitado = movimientoHabilitado;
   }
 
@@ -76,17 +76,19 @@ class Ash extends SpriteAnimationComponent
       }
       rethrow; // Repropagar el error para manejarlo más arriba
     }
+
     final hitboxWidth = 32.0; // Ancho fijo en píxeles
     final hitboxHeight = 50.0; // Altura fija en píxeles
     final hitboxPosition =
-        Vector2(16.0, 1.0); // Ajustes manuales para la posición
+        Vector2(18.0, 1.0); // Ajustes manuales para la posición
 
     // Añadir la hitbox personalizada
     add(RectangleHitbox(
       size: Vector2(hitboxWidth, hitboxHeight), // Tamaño de la hitbox
       position: hitboxPosition, // Posición relativa al sprite
       collisionType: CollisionType.active,
-    )..debugColor = const Color(0xFF0033FF));
+    )..debugColor =
+        const Color(0xFF0033FF)); // Activa depuración para ver hitboxes
   }
 
   /// Activa el movimiento del personaje al iniciar el juego.
@@ -114,23 +116,25 @@ class Ash extends SpriteAnimationComponent
 
     if (!_movimientoHabilitado) return;
 
-    // Actualizar posición horizontal
-    position.x += direccion.x * velocidad * dt;
+    // Asegurar que la gravedad se aplique desde el inicio
+    if (!enElAire) {
+      enElAire = true;
+    }
 
-    // Manejar salto y gravedad
+    // Aplicar gravedad solo cuando está en el aire
     if (enElAire) {
       velocidadVertical += gravedad * dt;
       position.y += velocidadVertical * dt;
-
-      // Detener caída cuando toca el suelo
-      if (position.y >= posicionSueloInicial) {
-        position.y = posicionSueloInicial;
-        enElAire = false;
-        velocidadVertical = 0;
-      }
     }
 
-    // Actualizar la animación según el estado actual
+    // Mover en el eje X
+    position.x += direccion.x * velocidad * dt;
+
+    // Si Ash cae fuera de la pantalla, activar Game Over
+    if (position.y > game.size.y) {
+      game.mostrarGameOver();
+    }
+
     actualizarAnimacion();
   }
 
@@ -162,7 +166,6 @@ class Ash extends SpriteAnimationComponent
   bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> teclasPresionadas) {
     if (!_movimientoHabilitado) return true;
 
-    // Eventos de tecla presionada o mantenida
     if (event is KeyDownEvent || event is KeyRepeatEvent) {
       if (teclasPresionadas.contains(LogicalKeyboardKey.keyA)) {
         direccion.x = -1; // Mover a la izquierda
@@ -173,16 +176,47 @@ class Ash extends SpriteAnimationComponent
       if (teclasPresionadas.contains(LogicalKeyboardKey.space)) {
         iniciarSalto(); // Saltar con el espacio
       }
-    } else if (event is KeyUpEvent) {
-      // Eventos de tecla soltada
+    }
+
+    if (event is KeyUpEvent) {
       if (event.logicalKey == LogicalKeyboardKey.keyA && direccion.x < 0) {
-        direccion.x = 0; // Detener movimiento a la izquierda
+        direccion.x = 0;
       }
       if (event.logicalKey == LogicalKeyboardKey.keyD && direccion.x > 0) {
-        direccion.x = 0; // Detener movimiento a la derecha
+        direccion.x = 0;
       }
     }
 
+    print("🎮 Movimiento: ${direccion.x}, Salto: ${enElAire}");
     return true;
+  }
+
+  @override
+  void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
+    super.onCollision(intersectionPoints, other);
+
+    if (other is ColisionPlataforma) {
+      print(
+          "🔹 Ash ha colisionado con una plataforma en y: ${other.position.y}");
+
+      // Verificar si Ash está cayendo y colisiona con la parte superior de la plataforma
+      if (velocidadVertical > 0 && position.y + size.y >= other.position.y) {
+        position.y = other.position.y - size.y; // Ajustar la posición de Ash
+        velocidadVertical = 0; // Detener la caída
+        enElAire = false; // Indicar que está en tierra
+        print("✅ Ash aterrizó en la plataforma en y: ${position.y}");
+      }
+    }
+  }
+
+  @override
+  void onCollisionEnd(PositionComponent other) {
+    super.onCollisionEnd(other);
+
+    if (other is ColisionPlataforma) {
+      print(
+          "🔺 Ash dejó de estar en contacto con la plataforma, vuelve a caer.");
+      enElAire = true;
+    }
   }
 }
