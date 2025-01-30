@@ -51,13 +51,28 @@ class Pikachu extends SpriteAnimationComponent
   void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
     super.onCollision(intersectionPoints, other);
 
-    // Verifica si la colisión es con Ash o Maya
-    if (other is Ash || other is Maya) {
-      // Reproduce el sonido de Pikachu
-      FlameAudio.play('pikachu_sound.mp3');
+    if (other is Ash) {
+      game.pikachusAsh.value++; // ✅ Incrementa el contador correctamente
+      print(
+          "⚡ Pikachu capturado por Ash! Total Ash: ${game.pikachusAsh.value}");
 
-      // Elimina el Pikachu del juego
-      removeFromParent();
+      // 🔹 Desactiva la hitbox para evitar colisiones dobles
+      removeWhere((component) => component is RectangleHitbox);
+
+      // 🔊 Reproducir sonido de captura (si tienes un sonido en assets/audio)
+      FlameAudio.play('pikachu_capturado.mp3');
+
+      removeFromParent(); // 🚀 Elimina el Pikachu de la pantalla
+    } else if (other is Maya) {
+      game.pikachusMaya.value++; // ✅ Incrementa el contador correctamente
+      print(
+          "⚡ Pikachu capturado por Maya! Total Maya: ${game.pikachusMaya.value}");
+
+      removeWhere(
+          (component) => component is RectangleHitbox); // Desactiva hitbox
+      FlameAudio.play('pikachu_capturado.mp3'); // 🔊 Sonido opcional
+
+      removeFromParent(); // 🚀 Elimina el Pikachu de la pantalla
     }
   }
 }

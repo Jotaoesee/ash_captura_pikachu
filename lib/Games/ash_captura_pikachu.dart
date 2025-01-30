@@ -9,6 +9,7 @@ import 'package:flame/game.dart';
 import 'package:flame/parallax.dart';
 import 'package:flame_tiled/flame_tiled.dart';
 import 'package:flame_audio/flame_audio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../personajes/ash.dart';
 
@@ -18,6 +19,9 @@ class AshCapturaPikachu extends FlameGame
   late Ash _ashPlayer; // Jugador Ash
   late Maya _maya; // Jugador Ash3
   double tiempoRestante = 30.0; // Tiempo en segundos
+  final ValueNotifier<int> pikachusAsh = ValueNotifier<int>(0);
+  final ValueNotifier<int> pikachusMaya = ValueNotifier<int>(0);
+  // Contador de Pikachus capturados por Maya
 
   bool juegoEnCurso = false; // Estado del juego (si está en curso o no)
 
@@ -82,9 +86,10 @@ class AshCapturaPikachu extends FlameGame
         }
       }
 
-      // Agregar los Pikachus desde el mapa
+      // 🔹 AGREGAR TODOS LOS PIKACHUS DESDE EL MAPA
       final ObjectGroup? objectGroupPikachu =
           mapa.tileMap.getLayer<ObjectGroup>('pikachu');
+
       if (objectGroupPikachu != null) {
         for (final posPikachuEnMapa in objectGroupPikachu.objects) {
           final pikachu = Pikachu(
@@ -98,11 +103,10 @@ class AshCapturaPikachu extends FlameGame
         print("⚠ No se encontraron Pikachus en el mapa.");
       }
 
-      // ✅ Inicializar Ash ANTES de llamar a iniciarJuego()
-      _ashPlayer = Ash(position: Vector2(40, 650), movimientoHabilitado: false);
+      // 🔹 INICIALIZAR ASH Y MAYA
+      _ashPlayer = Ash(position: Vector2(40, 550), movimientoHabilitado: false);
       add(_ashPlayer);
 
-      // ✅ Inicializar Maya antes de ser usado en iniciarJuego()
       _maya = Maya(position: Vector2(1840, 753), movimientoHabilitado: false);
       add(_maya);
 
@@ -115,12 +119,15 @@ class AshCapturaPikachu extends FlameGame
   // Función que inicia el juego
   void iniciarJuego() {
     juegoEnCurso = true;
+    pikachusAsh.value = 0; // ✅ Reiniciar contador correctamente
+    pikachusMaya.value = 0; // ✅ Reiniciar contador correctamente
     _ashPlayer.habilitarMovimiento(true);
-    _maya.habilitarMovimiento(true); // Habilitar el movimiento de Maya
+    _maya.habilitarMovimiento(true);
     overlays.remove('MenuInicio');
-    overlays.add('ContadorTiempo'); // 🔥 Mostrar el contador en pantalla
+    overlays.add('ContadorTiempo');
+    overlays.add('ContadorAsh'); // Mostrar contador de Ash
+    overlays.add('ContadorMaya'); // Mostrar contador de Maya
     FlameAudio.bgm.play('musica_fondo.mp3', volume: 0.5);
-    print("Reproduciendo música...");
   }
 
   @override
@@ -135,10 +142,15 @@ class AshCapturaPikachu extends FlameGame
 
   // Función que reinicia el juego
   void reiniciarJuego() {
-    juegoEnCurso = true; // Volver a iniciar el juego
-    overlays.remove('GameOverMenu'); // Eliminar el menú de Game Over
-    removeAll(children); // Eliminar todos los componentes del juego
-    inicializarComponentes(); // Volver a inicializar los componentes
+    juegoEnCurso = true;
+    overlays.remove('GameOverMenu');
+    removeAll(children);
+    inicializarComponentes();
+
+    // ✅ Volver a mostrar los contadores después de reiniciar el juego
+    overlays.add('ContadorTiempo');
+    overlays.add('ContadorAsh');
+    overlays.add('ContadorMaya');
   }
 
   @override

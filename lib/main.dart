@@ -21,7 +21,6 @@ class MiApp extends StatelessWidget {
       home: Scaffold(
         body: GameWidget<AshCapturaPikachu>.controlled(
           gameFactory: () => instanciaDelJuego,
-          // Configuración de los overlays, mapas de widgets superpuestos al juego.
           overlayBuilderMap: {
             'MenuInicio': (context, AshCapturaPikachu juego) {
               return Center(
@@ -77,19 +76,17 @@ class MiApp extends StatelessWidget {
               return Positioned(
                 bottom: 140,
                 left: 0,
-                right: 0, // Asegurar que esté centrado
+                right: 0,
                 child: Center(
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
-                      // Imagen de fondo (Pokébola)
                       Image.asset(
-                        'assets/images/pokeboll.png', // Asegúrate de que la imagen está en assets
-                        width: 80, // Tamaño de la Pokébola
+                        'assets/images/pokeboll.png',
+                        width: 80,
                         height: 80,
                         fit: BoxFit.cover,
                       ),
-                      // Texto del tiempo restante (desplazado hacia arriba)
                       Positioned(
                         top: 7,
                         child: Text(
@@ -102,7 +99,7 @@ class MiApp extends StatelessWidget {
                               Shadow(
                                 offset: Offset(2, 2),
                                 blurRadius: 2,
-                                color: Colors.white, // Efecto de sombra ligera
+                                color: Colors.white,
                               ),
                             ],
                           ),
@@ -113,10 +110,71 @@ class MiApp extends StatelessWidget {
                 ),
               );
             },
+            // 🔹 Contador de Pikachus de Ash (esquina superior izquierda)
+            'ContadorAsh': (context, AshCapturaPikachu juego) {
+              return Positioned(
+                top: 20,
+                left: 20,
+                child: ValueListenableBuilder<int>(
+                  valueListenable:
+                      juego.pikachusAsh, // 🔥 Se actualizará automáticamente
+                  builder: (context, valor, child) {
+                    return Row(
+                      children: [
+                        Image.asset(
+                          'assets/images/pikachulogo.png',
+                          width: 40,
+                          height: 40,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          valor.toString(), // ✅ Se actualiza dinámicamente
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              );
+            },
+
+            // 🔹 Contador de Pikachus de Maya (esquina superior derecha)
+            'ContadorMaya': (context, AshCapturaPikachu juego) {
+              return Positioned(
+                top: 20,
+                right: 20,
+                child: ValueListenableBuilder<int>(
+                  valueListenable:
+                      juego.pikachusMaya, // 🔥 Se actualizará automáticamente
+                  builder: (context, valor, child) {
+                    return Row(
+                      children: [
+                        Image.asset(
+                          'assets/images/pikachulogo.png',
+                          width: 40,
+                          height: 40,
+                        ),
+                        const SizedBox(width: 10),
+                        Text(
+                          valor.toString(), // ✅ Se actualiza dinámicamente
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              );
+            },
           },
-          initialActiveOverlays: const [
-            'MenuInicio'
-          ], // Iniciar con el overlay de inicio visible.
+          initialActiveOverlays: const ['MenuInicio'],
         ),
       ),
     );
