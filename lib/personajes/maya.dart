@@ -15,7 +15,7 @@ class Maya extends SpriteAnimationComponent
   // Propiedades relacionadas con el movimiento
   double velocidad = 150; // Velocidad horizontal en píxeles por segundo
   Vector2 direccion = Vector2.zero(); // Dirección del movimiento (-1, 0, 1)
-  double velocidadSalto = -320; // Velocidad inicial del salto
+  double velocidadSalto = -308; // Velocidad inicial del salto
   double gravedad = 500; // Fuerza gravitacional
   late double posicionSueloInicial; // Posición Y del suelo
   bool enElAire = false; // Indica si el personaje está en el aire
@@ -72,7 +72,7 @@ class Maya extends SpriteAnimationComponent
       size: Vector2(32, 50),
       position: Vector2(18, 1),
       collisionType: CollisionType.active,
-    )..debugColor = const Color(0xFF0033FF));
+    ));
   }
 
   void iniciarJuego() {

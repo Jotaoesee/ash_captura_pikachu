@@ -13,7 +13,7 @@ class Ash extends SpriteAnimationComponent
         CollisionCallbacks {
   double velocidad = 150;
   Vector2 direccion = Vector2.zero();
-  double velocidadSalto = -320;
+  double velocidadSalto = -308;
   double gravedad = 500;
   bool enElAire = false;
   double velocidadVertical = 0;
@@ -67,7 +67,7 @@ class Ash extends SpriteAnimationComponent
       size: Vector2(32, 50),
       position: Vector2(18, 1),
       collisionType: CollisionType.active,
-    )..debugColor = const Color(0xFF0033FF));
+    ));
   }
 
   void iniciarJuego() {

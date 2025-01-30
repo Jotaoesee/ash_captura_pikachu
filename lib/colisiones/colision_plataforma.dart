@@ -23,6 +23,6 @@ class ColisionPlataforma extends PositionComponent with CollisionCallbacks {
       collisionType: CollisionType
           .passive, // Tipo de colisión pasiva, no activa el movimiento al colisionar.
     )..debugMode =
-        true); // Activamos el modo de depuración para que podamos ver la hitbox visualmente durante el desarrollo.
+        false); // Activamos el modo de depuración para que podamos ver la hitbox visualmente durante el desarrollo.
   }
 }

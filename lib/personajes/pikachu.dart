@@ -40,11 +40,13 @@ class Pikachu extends SpriteAnimationComponent
         Vector2(1.0, 1.0); // Ajustes manuales para la posición
 
     // Añadir la hitbox personalizada
+    // Añadir la hitbox personalizada
     add(RectangleHitbox(
       size: Vector2(anchoHitbox, alturaHitbox), // Tamaño de la hitbox
       position: posicionHitbox, // Posición relativa al sprite
       collisionType: CollisionType.active,
-    )..debugColor = const Color(0xFF0033FF)); // Color para depuración de hitbox
+    ));
+    // Color para depuración de hitbox
   }
 
   @override

@@ -18,7 +18,7 @@ class AshCapturaPikachu extends FlameGame
     with HasCollisionDetection, HasKeyboardHandlerComponents {
   late Ash _ashPlayer; // Jugador Ash
   late Maya _maya; // Jugador Ash3
-  double tiempoRestante = 30.0; // Tiempo en segundos
+  double tiempoRestante = 5.0; // Tiempo en segundos
   final ValueNotifier<int> pikachusAsh = ValueNotifier<int>(0);
   final ValueNotifier<int> pikachusMaya = ValueNotifier<int>(0);
   // Contador de Pikachus capturados por Maya
@@ -132,13 +132,14 @@ class AshCapturaPikachu extends FlameGame
   }
 
   @override
-  bool debugMode = true; // Habilitar el modo de depuración
+  bool debugMode = false; // Habilitar el modo de depuración
   // Función que muestra el estado de 'Game Over'
   void mostrarGameOver() {
-    juegoEnCurso = false; // Marcar que el juego ha terminado
-    _ashPlayer
-        .habilitarMovimiento(false); // Deshabilitar el movimiento del jugador
-    overlays.add('GameOverMenu'); // Mostrar el menú de Game Over
+    juegoEnCurso = false; // Detener el juego
+    _ashPlayer.habilitarMovimiento(false);
+    _maya.habilitarMovimiento(false);
+
+    overlays.add('Resultados'); // ✅ Muestra la pantalla de resultados
   }
 
   // Función que reinicia el juego
@@ -146,7 +147,18 @@ class AshCapturaPikachu extends FlameGame
     juegoEnCurso = true;
     overlays.remove('GameOverMenu');
     removeAll(children);
-    inicializarComponentes();
+
+    // ✅ Volver a cargar el fondo parallax
+    loadParallaxComponent(
+      [
+        ParallaxImageData('Summer6.png'),
+      ],
+      baseVelocity: Vector2(7, 0),
+      velocityMultiplierDelta: Vector2(1.2, 1.0), // No se moverá el fondo
+      size: size,
+    ).then((fondo) => add(fondo));
+
+    inicializarComponentes(); // ✅ Volver a inicializar los demás componentes
 
     // ✅ Volver a mostrar los contadores después de reiniciar el juego
     overlays.add('ContadorTiempo');
