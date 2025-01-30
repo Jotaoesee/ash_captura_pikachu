@@ -13,17 +13,18 @@ import 'package:flutter/foundation.dart';
 
 import '../personajes/ash.dart';
 
-// Clase principal del juego que hereda de FlameGame
+/// Clase principal del juego que hereda de FlameGame
 class AshCapturaPikachu extends FlameGame
     with HasCollisionDetection, HasKeyboardHandlerComponents {
-  late Ash _ashPlayer; // Jugador Ash
-  late Maya _maya; // Jugador Ash3
-  double tiempoRestante = 5.0; // Tiempo en segundos
+  late Ash _ashPlayer; // Instancia del personaje Ash
+  late Maya _maya; // Instancia del personaje Maya
+  double tiempoRestante = 30.0; // Tiempo total del juego en segundos
+
+  // Contadores de Pikachus capturados por cada jugador (usando ValueNotifier para actualizar UI)
   final ValueNotifier<int> pikachusAsh = ValueNotifier<int>(0);
   final ValueNotifier<int> pikachusMaya = ValueNotifier<int>(0);
-  // Contador de Pikachus capturados por Maya
 
-  bool juegoEnCurso = false; // Estado del juego (si está en curso o no)
+  bool juegoEnCurso = false; // Indica si el juego está en curso
 
   @override
   Future<void> onLoad() async {
@@ -37,14 +38,14 @@ class AshCapturaPikachu extends FlameGame
       'maya.png',
     ]);
 
-    // Cargar el archivo de audio de música de fondo
+    // Cargar y reproducir la música de fondo
     await FlameAudio.audioCache.load('musica_fondo.mp3');
-
-    // Reproducir música de fondo con un volumen del 50%
     FlameAudio.bgm.play('musica_fondo.mp3', volume: 0.5);
-    print("Reproduciendo música...");
+    if (kDebugMode) {
+      print("Reproduciendo música...");
+    }
 
-    // Configurar la cámara para que su anclaje esté en la esquina superior izquierda
+    // Configurar la cámara para anclarse en la esquina superior izquierda
     camera.viewfinder.anchor = Anchor.topLeft;
 
     // Cargar y mostrar el fondo parallax
@@ -52,28 +53,29 @@ class AshCapturaPikachu extends FlameGame
       [
         ParallaxImageData('Summer6.png'),
       ],
-      baseVelocity: Vector2(7, 0),
-      velocityMultiplierDelta: Vector2(1.2, 1.0), // No se moverá el fondo
+      baseVelocity: Vector2(7, 0), // Velocidad de desplazamiento del fondo
+      velocityMultiplierDelta: Vector2(1.2, 1.0),
       size: size,
     );
     add(fondo); // Agregar el fondo al juego
 
-    // Inicializar otros componentes del juego (jugador, enemigos, etc.)
+    // Inicializar los componentes del juego (jugadores, plataformas, Pikachus, etc.)
     inicializarComponentes();
   }
 
-  // Función que inicializa los componentes del juego
+  /// Función que inicializa los componentes del juego
   void inicializarComponentes() async {
     try {
+      // Cargar el mapa de Tiled
       final TiledComponent mapa = await TiledComponent.load(
         "mapa.tmx",
         Vector2(48, 48),
       );
 
-      mapa.scale = Vector2(1.34, 1);
+      mapa.scale = Vector2(1.34, 1); // Ajustar escala del mapa
       add(mapa);
 
-      // Inicializar plataformas
+      // Inicializar plataformas a partir de los datos del mapa
       final ObjectGroup? colisiones =
           mapa.tileMap.getLayer<ObjectGroup>('colisiones');
       if (colisiones != null) {
@@ -86,7 +88,7 @@ class AshCapturaPikachu extends FlameGame
         }
       }
 
-      // 🔹 AGREGAR TODOS LOS PIKACHUS DESDE EL MAPA
+      // Agregar los Pikachus desde el mapa
       final ObjectGroup? objectGroupPikachu =
           mapa.tileMap.getLayer<ObjectGroup>('pikachu');
 
@@ -97,13 +99,17 @@ class AshCapturaPikachu extends FlameGame
                 Vector2(posPikachuEnMapa.x * 1.34, posPikachuEnMapa.y * 1),
           );
           add(pikachu);
-          print("⚡ Pikachu agregado en posición: ${pikachu.position}");
+          if (kDebugMode) {
+            print("⚡ Pikachu agregado en posición: ${pikachu.position}");
+          }
         }
       } else {
-        print("⚠ No se encontraron Pikachus en el mapa.");
+        if (kDebugMode) {
+          print("⚠ No se encontraron Pikachus en el mapa.");
+        }
       }
 
-      // 🔹 INICIALIZAR ASH Y MAYA
+      // Inicializar los personajes Ash y Maya en sus posiciones de inicio
       _ashPlayer =
           Ash(position: Vector2(190, 890), movimientoHabilitado: false);
       add(_ashPlayer);
@@ -111,66 +117,77 @@ class AshCapturaPikachu extends FlameGame
       _maya = Maya(position: Vector2(1330, 850), movimientoHabilitado: false);
       add(_maya);
 
-      print("✅ Ash y Maya han sido inicializados correctamente.");
+      if (kDebugMode) {
+        print("✅ Ash y Maya han sido inicializados correctamente.");
+      }
     } catch (e) {
-      print('Error cargando el mapa: $e');
+      if (kDebugMode) {
+        print('Error cargando el mapa: $e');
+      }
     }
   }
 
-  // Función que inicia el juego
+  /// Función que inicia el juego
   void iniciarJuego() {
     juegoEnCurso = true;
-    pikachusAsh.value = 0; // ✅ Reiniciar contador correctamente
-    pikachusMaya.value = 0; // ✅ Reiniciar contador correctamente
+    pikachusAsh.value = 0; // Reiniciar el contador de Ash
+    pikachusMaya.value = 0; // Reiniciar el contador de Maya
+
     _ashPlayer.habilitarMovimiento(true);
     _maya.habilitarMovimiento(true);
-    overlays.remove('MenuInicio');
-    overlays.add('ContadorTiempo');
-    overlays.add('ContadorAsh'); // Mostrar contador de Ash
-    overlays.add('ContadorMaya'); // Mostrar contador de Maya
+
+    overlays.remove('MenuInicio'); // Ocultar el menú de inicio
+    overlays.addAll([
+      'ContadorTiempo',
+      'ContadorAsh',
+      'ContadorMaya'
+    ]); // Mostrar overlays de juego
+
+    // Reproducir la música de fondo
     FlameAudio.bgm.play('musica_fondo.mp3', volume: 0.5);
   }
 
   @override
-  bool debugMode = false; // Habilitar el modo de depuración
-  // Función que muestra el estado de 'Game Over'
+  bool debugMode = false; // Desactiva el modo de depuración
+
+  /// Función que muestra la pantalla de Game Over
   void mostrarGameOver() {
     juegoEnCurso = false; // Detener el juego
     _ashPlayer.habilitarMovimiento(false);
     _maya.habilitarMovimiento(false);
 
-    overlays.add('Resultados'); // ✅ Muestra la pantalla de resultados
+    overlays.add('Resultados'); // Muestra la pantalla de resultados
   }
 
-  // Función que reinicia el juego
+  /// Función que reinicia el juego
   void reiniciarJuego() {
-    juegoEnCurso = true;
-    overlays.remove('GameOverMenu');
-    removeAll(children);
+    juegoEnCurso = false; // Detener el juego antes de reiniciarlo
+    overlays.clear(); // Eliminar todos los overlays activos
 
-    // ✅ Volver a cargar el fondo parallax
+    removeAll(children); // Eliminar todos los elementos del juego
+
+    tiempoRestante = 30.0; // Reiniciar el temporizador
+
+    // Volver a cargar el fondo parallax
     loadParallaxComponent(
       [
         ParallaxImageData('Summer6.png'),
       ],
       baseVelocity: Vector2(7, 0),
-      velocityMultiplierDelta: Vector2(1.2, 1.0), // No se moverá el fondo
+      velocityMultiplierDelta: Vector2(1.2, 1.0),
       size: size,
     ).then((fondo) => add(fondo));
 
-    inicializarComponentes(); // ✅ Volver a inicializar los demás componentes
+    inicializarComponentes(); // Volver a inicializar los demás componentes
 
-    // ✅ Volver a mostrar los contadores después de reiniciar el juego
-    overlays.add('ContadorTiempo');
-    overlays.add('ContadorAsh');
-    overlays.add('ContadorMaya');
+    overlays.add('MenuInicio'); // Mostrar el menú de inicio nuevamente
   }
 
   @override
   void update(double dt) {
     super.update(dt);
 
-    if (!juegoEnCurso) return;
+    if (!juegoEnCurso) return; // Si el juego no está en curso, no actualizar
 
     tiempoRestante -= dt;
     if (tiempoRestante <= 0) {
@@ -178,7 +195,7 @@ class AshCapturaPikachu extends FlameGame
       mostrarGameOver();
     }
 
-    // 🔥 Actualizar el overlay de tiempo en pantalla
+    // Actualizar el overlay del contador de tiempo
     overlays.remove('ContadorTiempo');
     overlays.add('ContadorTiempo');
   }
@@ -186,7 +203,6 @@ class AshCapturaPikachu extends FlameGame
   @override
   void onRemove() {
     super.onRemove(); // Llamar al método de eliminación de Flame
-    // Detener y limpiar todos los audios cuando el juego se cierra
-    FlameAudio.bgm.stop(); // Detener la música de fondo
+    FlameAudio.bgm.stop(); // Detener la música de fondo al salir del juego
   }
 }
