@@ -104,10 +104,11 @@ class AshCapturaPikachu extends FlameGame
       }
 
       // 🔹 INICIALIZAR ASH Y MAYA
-      _ashPlayer = Ash(position: Vector2(40, 550), movimientoHabilitado: false);
+      _ashPlayer =
+          Ash(position: Vector2(190, 890), movimientoHabilitado: false);
       add(_ashPlayer);
 
-      _maya = Maya(position: Vector2(1840, 753), movimientoHabilitado: false);
+      _maya = Maya(position: Vector2(1330, 850), movimientoHabilitado: false);
       add(_maya);
 
       print("✅ Ash y Maya han sido inicializados correctamente.");

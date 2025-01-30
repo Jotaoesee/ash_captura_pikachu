@@ -13,7 +13,7 @@ class Ash extends SpriteAnimationComponent
         CollisionCallbacks {
   double velocidad = 150;
   Vector2 direccion = Vector2.zero();
-  double velocidadSalto = -300;
+  double velocidadSalto = -320;
   double gravedad = 500;
   bool enElAire = false;
   double velocidadVertical = 0;
