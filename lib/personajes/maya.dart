@@ -4,9 +4,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 
 import '../Games/ash_captura_pikachu.dart';
+import '../colisiones/colision_plataforma.dart';
 
 /// Clase que representa a Maya en el juego.
-/// Permite movimiento con las flechas del teclado y salto con el punto (.).
 class Maya extends SpriteAnimationComponent
     with
         HasGameReference<AshCapturaPikachu>,
@@ -15,24 +15,20 @@ class Maya extends SpriteAnimationComponent
   // Propiedades relacionadas con el movimiento
   double velocidad = 150; // Velocidad horizontal en píxeles por segundo
   Vector2 direccion = Vector2.zero(); // Dirección del movimiento (-1, 0, 1)
-  double velocidadSalto =
-      -300; // Velocidad inicial del salto en píxeles por segundo
-  double gravedad = 500; // Fuerza gravitacional que afecta al personaje
-  late double posicionSueloInicial; // Posición Y inicial del suelo
-  bool enElAire = false; // Indica si el personaje está saltando
-  double velocidadVertical = 0; // Velocidad vertical durante el salto/caída
+  double velocidadSalto = -300; // Velocidad inicial del salto
+  double gravedad = 500; // Fuerza gravitacional
+  late double posicionSueloInicial; // Posición Y del suelo
+  bool enElAire = false; // Indica si el personaje está en el aire
+  double velocidadVertical = 0; // Velocidad de caída
   late bool _movimientoHabilitado; // Controla si el movimiento está activo
 
-  // Animaciones del personaje
-  late SpriteAnimation animacionCaminando; // Animación al caminar
-  late SpriteAnimation animacionSaltando; // Animación al saltar
-  late SpriteAnimation animacionQuieto; // Animación cuando está quieto
-  bool mirandoIzquierda = false; // Controla la dirección en que mira el sprite
+  // Animaciones
+  late SpriteAnimation animacionCaminando;
+  late SpriteAnimation animacionSaltando;
+  late SpriteAnimation animacionQuieto;
+  bool mirandoIzquierda = false; // Dirección en que mira Maya
 
-  /// Getter para verificar si el movimiento está habilitado.
-  bool get estaHabilitado => _movimientoHabilitado;
-
-  /// Constructor de la clase.
+  /// Constructor
   Maya({
     required Vector2 position,
     bool movimientoHabilitado = false,
@@ -42,68 +38,51 @@ class Maya extends SpriteAnimationComponent
     _movimientoHabilitado = movimientoHabilitado;
   }
 
-  /// Carga las animaciones necesarias para Maya.
   @override
   Future<void> onLoad() async {
     await super.onLoad();
     try {
       await game.images.load('Maya.png');
 
-      // Configurar la animación al caminar
       animacionCaminando = SpriteAnimation.fromFrameData(
         game.images.fromCache('Maya.png'),
         SpriteAnimationData.sequenced(
-          amount: 4,
-          textureSize: Vector2.all(64),
-          stepTime: 0.12,
-        ),
+            amount: 4, textureSize: Vector2.all(64), stepTime: 0.12),
       );
 
-      // Usar la misma animación para saltar
       animacionSaltando = animacionCaminando;
 
-      // Configurar la animación cuando está quieto
       animacionQuieto = SpriteAnimation.fromFrameData(
         game.images.fromCache('Maya.png'),
         SpriteAnimationData.sequenced(
-          amount: 1,
-          textureSize: Vector2.all(64),
-          stepTime: 0.1,
-        ),
+            amount: 1, textureSize: Vector2.all(64), stepTime: 0.1),
       );
 
-      animation = animacionQuieto; // Animación inicial
-      playing = false; // No reproducir la animación por defecto
+      animation = animacionQuieto;
+      playing = false;
     } catch (e) {
       if (kDebugMode) {
         print('Error cargando animaciones de Maya: $e');
       }
-      rethrow; // Repropagar el error para manejarlo más arriba
+      rethrow;
     }
-    final hitboxWidth = 32.0; // Ancho fijo en píxeles
-    final hitboxHeight = 50.0; // Altura fija en píxeles
-    final hitboxPosition =
-        Vector2(18.0, 1.0); // Ajustes manuales para la posición
 
-    // Añadir la hitbox personalizada
+    // Añadir hitbox de Maya
     add(RectangleHitbox(
-      size: Vector2(hitboxWidth, hitboxHeight), // Tamaño de la hitbox
-      position: hitboxPosition, // Posición relativa al sprite
+      size: Vector2(32, 50),
+      position: Vector2(18, 1),
       collisionType: CollisionType.active,
     )..debugColor = const Color(0xFF0033FF));
   }
 
-  /// Activa el movimiento del personaje al iniciar el juego.
   void iniciarJuego() {
     _movimientoHabilitado = true;
   }
 
-  /// Habilita o deshabilita el movimiento del personaje.
   void habilitarMovimiento(bool habilitado) {
     _movimientoHabilitado = habilitado;
   }
 
-  /// Inicia el salto del personaje si no está en el aire.
   void iniciarSalto() {
     if (!_movimientoHabilitado || enElAire) return;
 
@@ -111,34 +90,29 @@ class Maya extends SpriteAnimationComponent
     velocidadVertical = velocidadSalto;
   }
 
-  /// Actualiza el estado del personaje en cada frame.
   @override
   void update(double dt) {
     super.update(dt);
 
     if (!_movimientoHabilitado) return;
 
-    // Actualizar posición horizontal
+    // Aplicar movimiento horizontal
     position.x += direccion.x * velocidad * dt;
 
-    // Manejar salto y gravedad
+    // Aplicar gravedad
     if (enElAire) {
       velocidadVertical += gravedad * dt;
       position.y += velocidadVertical * dt;
-
-      // Detener caída cuando toca el suelo
-      if (position.y >= posicionSueloInicial) {
-        position.y = posicionSueloInicial;
-        enElAire = false;
-        velocidadVertical = 0;
-      }
     }
 
-    // Actualizar la animación según el estado actual
+    // Si Maya cae fuera de la pantalla, activar Game Over
+    if (position.y > game.size.y) {
+      game.mostrarGameOver();
+    }
+
     actualizarAnimacion();
   }
 
-  /// Cambia la animación según el estado actual del personaje.
   void actualizarAnimacion() {
     if (enElAire) {
       animation = animacionSaltando;
@@ -151,7 +125,7 @@ class Maya extends SpriteAnimationComponent
       animationTicker?.reset();
     }
 
-    // Cambiar la dirección del sprite al moverse
+    // Voltear la dirección del sprite
     if (direccion.x > 0 && !mirandoIzquierda) {
       flipHorizontally();
       mirandoIzquierda = true;
@@ -161,24 +135,21 @@ class Maya extends SpriteAnimationComponent
     }
   }
 
-  /// Maneja eventos del teclado para mover a Maya.
   @override
   bool onKeyEvent(KeyEvent event, Set<LogicalKeyboardKey> teclasPresionadas) {
     if (!_movimientoHabilitado) return true;
 
-    // Eventos de tecla presionada o mantenida
     if (event is KeyDownEvent || event is KeyRepeatEvent) {
       if (teclasPresionadas.contains(LogicalKeyboardKey.arrowLeft)) {
-        direccion.x = -1; // Mover a la izquierda
+        direccion.x = -1;
       }
       if (teclasPresionadas.contains(LogicalKeyboardKey.arrowRight)) {
-        direccion.x = 1; // Mover a la derecha
+        direccion.x = 1;
       }
       if (teclasPresionadas.contains(LogicalKeyboardKey.numpadDecimal)) {
-        iniciarSalto(); // Saltar con el punto (.)
+        iniciarSalto();
       }
     } else if (event is KeyUpEvent) {
-      // Eventos de tecla soltada
       if (event.logicalKey == LogicalKeyboardKey.arrowLeft && direccion.x < 0) {
         direccion.x = 0;
       }
@@ -189,5 +160,37 @@ class Maya extends SpriteAnimationComponent
     }
 
     return true;
+  }
+
+  /// Manejo de colisiones con plataformas
+  @override
+  void onCollision(Set<Vector2> intersectionPoints, PositionComponent other) {
+    super.onCollision(intersectionPoints, other);
+
+    if (other is ColisionPlataforma) {
+      // Solo si está cayendo y choca con la plataforma
+      if (velocidadVertical > 0 && enElAire) {
+        print("✅ Maya ha tocado el suelo");
+
+        // Ajustar la posición para evitar rebotes
+        final hitbox = other.children.firstWhere((c) => c is RectangleHitbox)
+            as RectangleHitbox;
+        position.y = other.position.y - size.y + hitbox.position.y + 50;
+
+        // Detener la caída
+        velocidadVertical = 0;
+        enElAire = false;
+      }
+    }
+  }
+
+  @override
+  void onCollisionEnd(PositionComponent other) {
+    super.onCollisionEnd(other);
+
+    if (other is ColisionPlataforma) {
+      enElAire = true;
+      print("🔺 Maya dejó de estar en contacto con la plataforma.");
+    }
   }
 }
