@@ -56,22 +56,22 @@ class Pikachu extends SpriteAnimationComponent
       print(
           "⚡ Pikachu capturado por Ash! Total Ash: ${game.pikachusAsh.value}");
 
+      // 🔊 Reproducir sonido de captura
+      FlameAudio.play('pikachu_sound.mp3');
+
       // 🔹 Desactiva la hitbox para evitar colisiones dobles
       removeWhere((component) => component is RectangleHitbox);
-
-      // 🔊 Reproducir sonido de captura (si tienes un sonido en assets/audio)
-      FlameAudio.play('pikachu_capturado.mp3');
-
       removeFromParent(); // 🚀 Elimina el Pikachu de la pantalla
     } else if (other is Maya) {
       game.pikachusMaya.value++; // ✅ Incrementa el contador correctamente
       print(
           "⚡ Pikachu capturado por Maya! Total Maya: ${game.pikachusMaya.value}");
 
-      removeWhere(
-          (component) => component is RectangleHitbox); // Desactiva hitbox
-      FlameAudio.play('pikachu_capturado.mp3'); // 🔊 Sonido opcional
+      // 🔊 Reproducir sonido de captura
+      FlameAudio.play('pikachu_sound.mp3');
 
+      // 🔹 Desactiva la hitbox para evitar colisiones dobles
+      removeWhere((component) => component is RectangleHitbox);
       removeFromParent(); // 🚀 Elimina el Pikachu de la pantalla
     }
   }
