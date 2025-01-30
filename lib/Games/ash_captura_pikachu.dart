@@ -16,7 +16,8 @@ import '../personajes/ash.dart';
 class AshCapturaPikachu extends FlameGame
     with HasCollisionDetection, HasKeyboardHandlerComponents {
   late Ash _ashPlayer; // Jugador Ash
-  late Maya _maya; // Jugador Ash
+  late Maya _maya; // Jugador Ash3
+  double tiempoRestante = 30.0; // Tiempo en segundos
 
   bool juegoEnCurso = false; // Estado del juego (si está en curso o no)
 
@@ -98,7 +99,7 @@ class AshCapturaPikachu extends FlameGame
       }
 
       // ✅ Inicializar Ash ANTES de llamar a iniciarJuego()
-      _ashPlayer = Ash(position: Vector2(40, 550), movimientoHabilitado: false);
+      _ashPlayer = Ash(position: Vector2(40, 650), movimientoHabilitado: false);
       add(_ashPlayer);
 
       // ✅ Inicializar Maya antes de ser usado en iniciarJuego()
@@ -117,6 +118,7 @@ class AshCapturaPikachu extends FlameGame
     _ashPlayer.habilitarMovimiento(true);
     _maya.habilitarMovimiento(true); // Habilitar el movimiento de Maya
     overlays.remove('MenuInicio');
+    overlays.add('ContadorTiempo'); // 🔥 Mostrar el contador en pantalla
     FlameAudio.bgm.play('musica_fondo.mp3', volume: 0.5);
     print("Reproduciendo música...");
   }
@@ -141,17 +143,19 @@ class AshCapturaPikachu extends FlameGame
 
   @override
   void update(double dt) {
-    super.update(dt); // Llamar al método de actualización de Flame
+    super.update(dt);
 
-    // Si el juego no está en curso, no hacemos nada
-    if (!juegoEnCurso) {
-      return;
-    }
+    if (!juegoEnCurso) return;
 
-    // Si el jugador se ha caído fuera de la pantalla, mostrar 'Game Over'
-    if (_ashPlayer.position.y > size.y) {
+    tiempoRestante -= dt;
+    if (tiempoRestante <= 0) {
+      tiempoRestante = 0;
       mostrarGameOver();
     }
+
+    // 🔥 Actualizar el overlay de tiempo en pantalla
+    overlays.remove('ContadorTiempo');
+    overlays.add('ContadorTiempo');
   }
 
   @override

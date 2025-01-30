@@ -24,30 +24,22 @@ class MiApp extends StatelessWidget {
           // Configuración de los overlays, mapas de widgets superpuestos al juego.
           overlayBuilderMap: {
             'MenuInicio': (context, AshCapturaPikachu juego) {
-              // Overlay de inicio que muestra un menú con un botón para empezar el juego.
               return Center(
                 child: Container(
-                  padding: const EdgeInsets.all(
-                      20), // Espaciado interno del contenedor.
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    // Establecemos el color de fondo del contenedor.
-                    color: Colors.white
-                        .withOpacity(0.8), // Fondo semitransparente.
-                    borderRadius:
-                        BorderRadius.circular(15), // Bordes redondeados.
+                    color: Colors.white.withOpacity(0.8),
+                    borderRadius: BorderRadius.circular(15),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black
-                            .withOpacity(0.3), // Sombra del contenedor.
+                        color: Colors.black.withOpacity(0.3),
                         blurRadius: 10,
-                        offset:
-                            const Offset(0, 4), // Desplazamiento de la sombra.
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
                   child: ElevatedButton(
                     onPressed: () {
-                      // Elimina el overlay del menú de inicio y comienza el juego.
                       juego.overlays.remove('MenuInicio');
                       juego.iniciarJuego();
                     },
@@ -57,34 +49,66 @@ class MiApp extends StatelessWidget {
               );
             },
             'GameOver': (context, AshCapturaPikachu juego) {
-              // Overlay de Game Over que muestra un mensaje y un botón para reiniciar el juego.
               return Center(
                 child: Container(
-                  padding: const EdgeInsets.all(
-                      20), // Espaciado interno del contenedor.
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    // Establecemos el color de fondo del contenedor.
-                    color: Colors.white
-                        .withOpacity(0.8), // Fondo semitransparente.
-                    borderRadius:
-                        BorderRadius.circular(15), // Bordes redondeados.
+                    color: Colors.white.withOpacity(0.8),
+                    borderRadius: BorderRadius.circular(15),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black
-                            .withOpacity(0.3), // Sombra del contenedor.
+                        color: Colors.black.withOpacity(0.3),
                         blurRadius: 10,
-                        offset:
-                            const Offset(0, 4), // Desplazamiento de la sombra.
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
                   child: ElevatedButton(
                     onPressed: () {
-                      // Elimina el overlay de "GameOverMenu" y reinicia el juego.
                       juego.overlays.remove('GameOver');
                       juego.iniciarJuego();
                     },
                     child: const Text('Reiniciar Juego'),
+                  ),
+                ),
+              );
+            },
+            'ContadorTiempo': (context, AshCapturaPikachu juego) {
+              return Positioned(
+                bottom: 140,
+                left: 0,
+                right: 0, // Asegurar que esté centrado
+                child: Center(
+                  child: Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      // Imagen de fondo (Pokébola)
+                      Image.asset(
+                        'assets/images/pokeboll.png', // Asegúrate de que la imagen está en assets
+                        width: 80, // Tamaño de la Pokébola
+                        height: 80,
+                        fit: BoxFit.cover,
+                      ),
+                      // Texto del tiempo restante (desplazado hacia arriba)
+                      Positioned(
+                        top: 7,
+                        child: Text(
+                          juego.tiempoRestante.toInt().toString(),
+                          style: const TextStyle(
+                            color: Colors.black,
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            shadows: [
+                              Shadow(
+                                offset: Offset(2, 2),
+                                blurRadius: 2,
+                                color: Colors.white, // Efecto de sombra ligera
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               );
